@@ -32,7 +32,6 @@ module XET::Socket
         # Specially filter out json "unexpected char/token" error
         raise e unless e.to_s =~ /^[Uu]nexpected/
       end
-      Fiber.yield
     rescue e : IO::EOFError
       raise XET::Error::Login::EOF.new
     rescue e : IO::TimeoutError

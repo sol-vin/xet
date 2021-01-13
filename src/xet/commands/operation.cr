@@ -32,7 +32,7 @@ command Operation::System::Upgrade::Request, id: 0x05f5 do
   field session_id_message, String, "SessionID", default: "0x00000000"
 end
 
-command Operation::System::Upgrade::Request, id: 0x05f5 do
+command Operation::System::Upgrade::Reply, id: 0x05f5 do
   field name, String, "Name", "OPSystemUpgrade"
   nest config, Config, "OPSystemUpgrade" do
     field? hardware, String, "Hardware"

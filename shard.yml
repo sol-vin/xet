@@ -8,6 +8,14 @@ targets:
   app:
     main: src/app.cr
 
+dependencies:
+  kemal:
+    github: kemalcr/kemal
+  fiberpool:
+    github: akitaonrails/fiberpool
+  redis:
+    github: jgaskins/redis
+    
 crystal: 0.35.1
 
 license: MIT

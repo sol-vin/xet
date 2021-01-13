@@ -1,7 +1,10 @@
+require "kemal"
+require "fiberpool"
+require "redis"
+
 require "./xet"
 
-xmsg = XET::Command::Bits::Request.new
-puts xmsg.to_json
+require "./app/macros/**"
 
-xmsg = XET::Command::Network::Common::Reply.new
-puts xmsg.to_json
+Kemal.config.port = ARGV.size == 0 ? 3000 : ARGV[0].to_i
+Kemal.run
