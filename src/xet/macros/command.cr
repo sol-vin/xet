@@ -3,11 +3,34 @@ macro command(class_path, id, &block)
     include JSON::Serializable
     ID = {{id}}_u16
 
-    def initialize
+    macro finished
+      def initialize(
+        @type = 0xff_u8,
+        @version = 0x01_u8,
+        @reserved1 = 0x00_u8,
+        @reserved2 = 0x00_u8,
+        @session_id = 0_u32,
+        @sequence = 0_u32,
+        @total_packets = 0_u8,
+        @current_packet = 0_u8,
+        @id = ID,
+        @size = 0_u32,
+        @message = "",
+        {% verbatim do %}
+          {% for m in @type.methods.select {|m| m.annotation(XET::Field) } %}
+            @{{m.name.id}} = {{m.annotation(XET::Field).named_args[:default]}},
+          {% end %}
+        {% end %}
+      )
+      end
+    end
+  
+    def build_message!
+      @message = self.to_json
     end
 
-    def self.from_msg(msg : XET::Message) : ::XET::Command::{{class_path.id}}
-      parsed_command = ::XET::Command::{{class_path.id}}.from_json(msg.message)
+    def self.from_msg(msg : XET::Message) : self
+      parsed_command = self.from_json(msg.message)
 
       parsed_command.type = msg.type
       parsed_command.version = msg.version

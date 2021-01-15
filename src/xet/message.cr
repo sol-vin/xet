@@ -25,24 +25,12 @@ class XET::Message
   property message : String
   
   @[JSON::Field(ignore: true)]
-  property sender_ip = ""
-  @[JSON::Field(ignore: true)]
-  property sender_port = 0
-  @[JSON::Field(ignore: true)]
-  property? time_created  = Time.local
-  @[JSON::Field(ignore: true)]
-  property? received = false
-  @[JSON::Field(ignore: true)]
   property? use_custom_size : Bool = false
 
 
-  def self.from_s(string, sender_ip = "", sender_port = 0, received = false) : XET::Message
-
+  def self.from_s(string) : XET::Message
     io = IO::Memory.new string
     m = XET::Message.new
-    m.sender_ip = sender_ip
-    m.sender_port = sender_port
-    m.received = received
     m.type = io.read_bytes(UInt8, IO::ByteFormat::LittleEndian)
     m.version = io.read_bytes(UInt8, IO::ByteFormat::LittleEndian)
     m.reserved1 = io.read_bytes(UInt8, IO::ByteFormat::LittleEndian)
@@ -59,8 +47,6 @@ class XET::Message
     end
     m
   end
-
-
 
   def initialize(@type = 0xff_u8, @version = 0x01_u8, @reserved1 = 0x00_u8, @reserved2 = 0x00_u8, @session_id = 0_u32, @sequence = 0_u32, @total_packets = 0_u8, @current_packet = 0_u8, @id = 0_u16, @size = 0_u32, @message = "")
   end
@@ -98,8 +84,9 @@ class XET::Message
     header_io.to_s
   end
 
-  def to_s : String
-    (header + self.message)
+  def to_s(io) : String
+    io << header
+    io << self.message
   end
 
   def clone : XET::Message
@@ -115,8 +102,6 @@ class XET::Message
     x.id = id
     x.size = size
     x.message = message
-
-    #TODO: What about sender_ip? and the others?
 
     x.use_custom_size = use_custom_size?
     x

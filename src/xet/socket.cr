@@ -103,7 +103,6 @@ module XET::Socket
   end
 
   def send_message(xmm : XET::Message)
-    puts
     begin
       self.send_raw_message xmm.to_s
     rescue e : IO::EOFError
@@ -165,7 +164,7 @@ class XET::Socket::TCP < TCPSocket
   end
 
   def send_raw_message(message)
-    self << message.to_s
+    message.to_s self
   end
 end
 
