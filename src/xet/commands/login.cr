@@ -1,8 +1,10 @@
 module XET::Command::Login
-  SUCCESS = 100
-  UNKNOWN = 106
-  FAILURE = 205
-  UNKOWN_FAILURE = 206
+  module Ret
+    SUCCESS = 100
+    UNKNOWN = 106
+    FAILURE = 205
+    UNKNOWN_FAILURE = 206
+  end
 
   DEFAULT_ADMIN_USER = "admin"
   DEFAULT_ADMIN_PASSWORD = ""

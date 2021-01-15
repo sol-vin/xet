@@ -9,11 +9,14 @@ require "./xet/macros/**"
 
 require "./xet/message"
 require "./xet/socket"
-require "./xet/commands/**"
+require "./xet/commands/login"
+require "./xet/commands/network"
+require "./xet/commands/operation"
+
 
 module XET
   VERSION                = {{ `shards version #{__DIR__}`.chomp.stringify }}
-  DEFAULT_TCP_PORT       = 34567
-  DEFAULT_UDP_PORT       = 34568
-  DEFAULT_DISCOVERY_PORT = 34569
+  DEFAULT_TCP_PORT       = 34567_u16
+  DEFAULT_UDP_PORT       = 34568_u16
+  DEFAULT_DISCOVERY_PORT = 34569_u16
 end

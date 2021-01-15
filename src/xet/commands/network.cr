@@ -1,5 +1,6 @@
 command Network::Common::Request, id: 0x05fa
 
+{% begin %}
 command Network::Common::Reply, id: 0x05fb do
   nest config, Config, "NetWork.NetCommon" do
     field? channel_num, UInt32, "ChannelNum"
@@ -25,3 +26,5 @@ command Network::Common::Reply, id: 0x05fb do
   field? ret, Int32, "Ret"
   field session_id_message, String, "SessionID", default: "0x00000000"
 end
+{% end %}
+

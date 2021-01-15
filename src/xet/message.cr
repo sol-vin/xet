@@ -84,12 +84,12 @@ class XET::Message
     header_io.to_s
   end
 
-  def to_s(io) : String
+  def to_s(io)
     io << header
     io << self.message
   end
 
-  def clone : XET::Message
+  def to_msg : XET::Message
     x = XET::Message.new
     x.type = type
     x.version = version

@@ -15,16 +15,17 @@ class XET::App::Broadcaster
 
   getter port : UInt16
 
-  def initialize(@port = XET::DEFAULT_DISCOVERY_PORT, @interval = 5)
-    @socket = XM::Socket::UDP.new("255.255.255.255", @port)
-    @socket.bind ::Socket::IPAddress.new("0.0.0.0", @port)
+  def initialize(@port = XET::DEFAULT_DISCOVERY_PORT, @interval = 20)
+    @incoming_netcom.close
+    @socket = XET::Socket::UDP.new("255.255.255.255", @port)
+    @socket.bind ::Socket::IPAddress.new("0.0.0.0", @port.to_i32)
     @socket.broadcast = true
   end
 
   def refresh_socket
     @socket.close
     @socket = XET::Socket::UDP.new("255.255.255.255", @port)
-    @socket.bind ::Socket::IPAddress.new("0.0.0.0", @port)
+    @socket.bind ::Socket::IPAddress.new("0.0.0.0", @port.to_i32)
     @socket.broadcast = true
   end
 
@@ -64,7 +65,7 @@ class XET::App::Broadcaster
         rescue exception : XET::Error::Command::CannotParse
           # Ignore
         rescue exception : XET::Error::Receive::Timeout
-          # ignore
+          # Ignore
         rescue exception : XET::Error::Receive
           if exception.is_a?(XET::Error::Receive::Timeout)
           else
