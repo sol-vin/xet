@@ -56,6 +56,7 @@ class XET::App::Broadcaster
         begin
           xmsg = @socket.receive_message
           netcom_reply = XET::Command::Network::Common::Reply.from_msg(xmsg)
+          puts "Got reply from #{netcom_reply.config.host_ip}"
           spawn(name: "XET::App::Broadcaster -> Listen Fiber -> Sending NetCom Result") do
             begin
               @incoming_netcom.send netcom_reply

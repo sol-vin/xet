@@ -4,36 +4,29 @@ macro nest(var_name, class_name, field_name, &block)
   {% raise "nest: field_name was not a StringLiteral was a #{field_name.class_name}" unless field_name.is_a? StringLiteral %}
   
   {% begin %}
-  {% pp "adding field #{field_name} to ::#{@type} as type ::#{@type}::#{class_name}" %}
   class ::{{@type}}
     field {{var_name}}, ::{{@type}}::{{class_name}}, {{field_name}}
+  end
 
 
-    class {{class_name}}
-      include JSON::Serializable
+  class ::{{@type}}::{{class_name}}
+    include JSON::Serializable
 
-
-      {% verbatim do %}
+    {% begin %}
       macro finished
-        {% pp "Finshed type #{@type}" %}
-        {% for m in @type.methods.select {|m| m.annotation(XET::Field) } %}
-          @{{m.name.id}}  : {{m.annotation(XET::Field).named_args[:type]}} = {{m.annotation(XET::Field).named_args[:default]}}
-          {% pp "adding ivar #{m.name} to ::#{@type}" %}
+        def initialize(
+        {% verbatim do %}
+          {% for m in @type.methods.select {|m| m.annotation(::XET::Field) } %}
+            @{{m.name.id}}  : {{m.annotation(::XET::Field).named_args[:type]}} = {{m.annotation(::XET::Field).named_args[:default]}},
+          {% end %}
         {% end %}
 
-        def initialize(
-          {% pp "Finshed type.initialize #{@type}" %}
-          {% for m in @type.methods.select {|m| m.annotation(XET::Field) } %}
-            @{{m.name.id}}  : {{m.annotation(XET::Field).named_args[:type]}} = {{m.annotation(XET::Field).named_args[:default]}},
-            {% pp "adding arg #{m.name} to ::#{@type}.initialize" %}
-          {% end %}
         )
         end
       end
       {% end %}
-
-      {{ yield }}
-    end
+    {{ yield }}
   end
+
   {% end %}
 end

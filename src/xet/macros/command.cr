@@ -19,6 +19,7 @@ macro command(class_path, id, &block)
       @id = ID
       @size = 0_u32
       @message = ""
+
       {% for m in @type.methods.select {|m| m.annotation(XET::Field) } %}
         @{{m.name.id}}  : {{m.annotation(XET::Field).named_args[:type]}} = {{m.annotation(XET::Field).named_args[:default]}}
       {% end %}
@@ -41,6 +42,7 @@ macro command(class_path, id, &block)
           {% end %}
         {% end %}
       )
+
       end
     end
   
