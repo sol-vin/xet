@@ -9,14 +9,18 @@ end
 
 class XET::App::Broadcasters
   @@broadcasters_mutex = Mutex.new
-  @@broadcasters = {} of UInt32 => XET::App::Broadcaster
+  @@broadcasters = {} of UInt16 => XET::App::Broadcaster
 
-  def self.[](name)
-    @@broadcasters[name]
+  def self.[](port)
+    @@broadcasters[port]
   end
 
-  def self.[]?(name)
-    @@broadcasters[name]?
+  def self.[]=(port : UInt16, other : XET::App::Broadcaster)
+    @@broadcasters[port] = other
+  end
+
+  def self.[]?(port : UInt16)
+    @@broadcasters[port]?
   end
 
   def self.add(broadcaster : XET::App::Broadcaster)

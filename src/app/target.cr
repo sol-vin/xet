@@ -7,4 +7,7 @@ class XET::App::Target
   property tcp_port : Int32 = 0
   property udp_port : Int32 = 0
   property http_port : Int32 = 0
+
+  def initialize(@name)
+  end
 end

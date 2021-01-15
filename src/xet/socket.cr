@@ -7,7 +7,7 @@ module XET::Socket
 
   # Target a camera.
   def set_target(ip : String, port = 0)
-    @target = ::Socket::IPAddress.new(ip, port)
+    @target = ::Socket::IPAddress.new(ip, port.to_i32)
   end
   
   # Have we found at least one target yet?
@@ -25,7 +25,7 @@ module XET::Socket
       self.send_raw_message login_command.to_s
       reply = receive_message
       begin
-        unless [ XET::Command::Login::ADMIN_SUCCESS,  XET::Command::Login::DEFAULT_SUCCESS].includes? JSON.parse(reply.message)["Ret"]
+        unless [ XET::Command::Login::Ret::ADMIN_SUCCESS,  XET::Command::Login::Ret::DEFAULT_SUCCESS].includes? JSON.parse(reply.message)["Ret"]
           raise XET::Error::Login::Failure.new
         end
       rescue e
@@ -198,8 +198,9 @@ class XET::Socket::UDP < UDPSocket
 
   def receive_message : XET::Message
     begin
+      # TODO: This needs fixing....
       packet_in = self.receive(1000)
-      XET::Message.from_s(packet_in[0], sender_ip: packet_in[1].address, sender_port: packet_in[1].port, received: true)
+      XET::Message.from_s(packet_in[0])
     rescue e : IO::TimeoutError
       raise XET::Error::Receive::Timeout.new
     end
