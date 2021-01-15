@@ -36,10 +36,12 @@ command Operation::System::Upgrade::Reply, id: 0x05f5 do
   field name, String, "Name", "OPSystemUpgrade"
   nest config, Config, "OPSystemUpgrade" do
     field? hardware, String, "Hardware"
+    
     nest logo_area, LogoArea, "LogoArea" do
       field? start, String, "Begin"
       field? finish, String, "End"
     end
+
     field? logo_part_type, String, "LogoPartType"
     field? serial, String, "Serial"
     field? vendor, String, "Vendor"
