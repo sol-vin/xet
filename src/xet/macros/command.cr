@@ -20,10 +20,6 @@ macro command(class_path, id, &block)
       @size = 0_u32
       @message = ""
 
-      {% for m in @type.methods.select {|m| m.annotation(XET::Field) } %}
-        @{{m.name.id}}  : {{m.annotation(XET::Field).named_args[:type]}} = {{m.annotation(XET::Field).named_args[:default]}}
-      {% end %}
-
       def initialize(
         @type = 0xff_u8,
         @version = 0x01_u8,
@@ -42,6 +38,8 @@ macro command(class_path, id, &block)
           {% end %}
         {% end %}
       )
+
+      build_message!
 
       end
     end
@@ -66,6 +64,7 @@ macro command(class_path, id, &block)
         parsed_command.size = msg.size
         parsed_command.message = msg.message
         parsed_command.use_custom_size = msg.use_custom_size?
+        parsed_command.build_message!
         parsed_command
       rescue exception : JSON::ParseException
         raise XET::Error::Command::CannotParse.new
