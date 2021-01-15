@@ -4,10 +4,11 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-    <title>Xiongmai Exploitation Toolkit - <%= yield_content "title" %></title>
+    <title>Xiongmai Exploitation Toolkit <%= yield_content "title" %></title>
 
     <link href="/icons/css/all.min.css" rel="stylesheet">
     <link href="/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/main.css" rel="stylesheet">
 
     <script src="/icons/js/all.min.js"></script>
     <script src="/bootstrap/js/bootstrap.min.js"></script>
@@ -15,6 +16,8 @@
     <%= yield_content "head" %>
   </head>
   <body>
+    <%= render_file "navbar" %>
+    
     <%= content %>
 
     <%= yield_content "footer" %>

@@ -7,7 +7,8 @@ authors:
 targets:
   app:
     main: src/app.cr
-
+  sb:
+    main: src/sandbox.cr
 dependencies:
   kemal:
     github: kemalcr/kemal

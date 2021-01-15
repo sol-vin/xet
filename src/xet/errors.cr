@@ -11,6 +11,9 @@ abstract class XET::Error < ::Exception
       
     class ConnectionReset < Socket
     end
+
+    class Closed < Socket
+    end
   end
 
   abstract class Login < XET::Error

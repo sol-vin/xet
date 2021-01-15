@@ -1,9 +1,9 @@
 # Renders an ecr file with the layout around it
-macro render_layout(filename)
-  render "./src/views/pages/#{{{filename}}}.ecr", "./src/views/layout.ecr"
+macro render_page(filename)
+  render "./src/app/views/pages/#{{{filename}}}.ecr", "./src/app/views/layout.ecr"
 end
 
 # Renders just an ecr file
 macro render_file(filename)
-  render "./src/views/reuse/#{{{filename}}}.ecr"
+  render "./src/app/views/reuse/#{{{filename}}}.ecr"
 end

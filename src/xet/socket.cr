@@ -55,28 +55,32 @@ module XET::Socket
 
   def receive_message : XET::Message
     begin
-      m = XET::Message.new
-      m.sender_ip = @target.address
-      m.sender_port = @target.port
-      m.received = true
-      m.type = self.read_bytes(UInt8, IO::ByteFormat::LittleEndian)
-      m.version = self.read_bytes(UInt8, IO::ByteFormat::LittleEndian)
-      m.reserved1 = self.read_bytes(UInt8, IO::ByteFormat::LittleEndian)
-      m.reserved2 = self.read_bytes(UInt8, IO::ByteFormat::LittleEndian)
-      m.session_id = self.read_bytes(UInt32, IO::ByteFormat::LittleEndian)
-      m.sequence = self.read_bytes(UInt32, IO::ByteFormat::LittleEndian)
-      m.total_packets = self.read_bytes(UInt8, IO::ByteFormat::LittleEndian)
-      m.current_packet = self.read_bytes(UInt8, IO::ByteFormat::LittleEndian)
-      m.id = self.read_bytes(UInt16, IO::ByteFormat::LittleEndian)
-      m.size = self.read_bytes(UInt32, IO::ByteFormat::LittleEndian)
+      if closed?
+        raise XET::Error::Socket::Closed
+      else
+        m = XET::Message.new
+        m.sender_ip = @target.address
+        m.sender_port = @target.port
+        m.received = true
+        m.type = self.read_bytes(UInt8, IO::ByteFormat::LittleEndian)
+        m.version = self.read_bytes(UInt8, IO::ByteFormat::LittleEndian)
+        m.reserved1 = self.read_bytes(UInt8, IO::ByteFormat::LittleEndian)
+        m.reserved2 = self.read_bytes(UInt8, IO::ByteFormat::LittleEndian)
+        m.session_id = self.read_bytes(UInt32, IO::ByteFormat::LittleEndian)
+        m.sequence = self.read_bytes(UInt32, IO::ByteFormat::LittleEndian)
+        m.total_packets = self.read_bytes(UInt8, IO::ByteFormat::LittleEndian)
+        m.current_packet = self.read_bytes(UInt8, IO::ByteFormat::LittleEndian)
+        m.id = self.read_bytes(UInt16, IO::ByteFormat::LittleEndian)
+        m.size = self.read_bytes(UInt32, IO::ByteFormat::LittleEndian)
 
-      unless m.size == 0
-        m.message = self.read_string(m.size-1)
+        unless m.size == 0
+          m.message = self.read_string(m.size-1)
+        end
+
+        self.read_byte #bleed this byte
+
+        m
       end
-
-      self.read_byte #bleed this byte
-
-      m
     rescue e : IO::EOFError
       raise XET::Error::Receive::EOF.new
     rescue e : IO::TimeoutError
@@ -99,6 +103,7 @@ module XET::Socket
   end
 
   def send_message(xmm : XET::Message)
+    puts
     begin
       self.send_raw_message xmm.to_s
     rescue e : IO::EOFError
@@ -108,6 +113,8 @@ module XET::Socket
     rescue e
       if e.to_s.includes? "Connection refused"
         raise XET::Error::Send::ConnectionRefused.new
+      elsif e.to_s.includes? "Closed stream"
+        raise XET::Error::Socket::Closed.new
       elsif e.to_s.includes? "No route to host"
         raise XET::Error::Send::NoRoute.new
       elsif e.to_s.includes? "Broken pipe"

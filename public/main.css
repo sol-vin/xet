@@ -1,0 +1,13 @@
+body {
+  background-color: lightblue;
+}
+
+.home-title {
+  text-align: center;
+}
+
+.add-title-form {
+  text-align: center;
+  align-content: center;
+  align-items: center;
+}
