@@ -3,7 +3,7 @@ macro nest(var_name, class_name, field_name, &block)
   {% raise "nest: class_name was not a Path was a #{class_name.class_name}" unless class_name.is_a? Path %}
   {% raise "nest: field_name was not a StringLiteral was a #{field_name.class_name}" unless field_name.is_a? StringLiteral %}
 
-  field {{var_name}}, {{class_name}}, {{field_name}}, default: {{class_name}}.new
+  field {{var_name}}, {{class_name}}, {{field_name}}
 
   class {{class_name}}
     include JSON::Serializable
