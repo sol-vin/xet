@@ -9,7 +9,10 @@ require "./xet/macros/**"
 
 require "./xet/message"
 require "./xet/socket"
-require "./xet/commands/**"
+require "./xet/commands/login"
+require "./xet/commands/network"
+require "./xet/commands/operation"
+
 
 module XET
   VERSION                = {{ `shards version #{__DIR__}`.chomp.stringify }}

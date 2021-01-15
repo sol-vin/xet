@@ -2,6 +2,7 @@ macro command(class_path, id, &block)
   {% raise "command: class_path was not a Path" unless class_path.is_a? Path %}
   {% raise "command: id was not a NumberLiteral" unless id.is_a? NumberLiteral %}
 
+  {% begin %}
   class ::XET::Command::{{class_path.id}} < XET::Message
     include JSON::Serializable
     ID = {{id}}_u16
@@ -18,10 +19,8 @@ macro command(class_path, id, &block)
       @id = ID
       @size = 0_u32
       @message = ""
-      {% verbatim do %}
-        {% for m in @type.methods.select {|m| m.annotation(XET::Field) } %}
-          @{{m.name.id}}  : {{m.annotation(XET::Field).named_args[:type]}} = {{m.annotation(XET::Field).named_args[:default]}}
-        {% end %}
+      {% for m in @type.methods.select {|m| m.annotation(XET::Field) } %}
+        @{{m.name.id}}  : {{m.annotation(XET::Field).named_args[:type]}} = {{m.annotation(XET::Field).named_args[:default]}}
       {% end %}
 
       def initialize(
@@ -81,4 +80,5 @@ macro command(class_path, id, &block)
 
     {{ yield }}
   end
+  {% end %}
 end
