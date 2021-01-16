@@ -12,15 +12,27 @@ class XET::App::Broadcasters
   @@broadcasters = {} of UInt16 => XET::App::Broadcaster
 
   def self.[](port)
-    @@broadcasters[port]
+    @@broadcasters_mutex.synchronize do
+      @@broadcasters[port]
+    end
   end
 
   def self.[]=(port : UInt16, other : XET::App::Broadcaster)
-    @@broadcasters[port] = other
+    @@broadcasters_mutex.synchronize do
+      @@broadcasters[port] = other
+    end
   end
 
   def self.[]?(port : UInt16)
-    @@broadcasters[port]?
+    @@broadcasters_mutex.synchronize do
+      @@broadcasters[port]?
+    end
+  end
+
+  def self.dup
+    @@broadcasters_mutex.synchronize do
+      @@broadcasters.dup
+    end
   end
 
   def self.add(broadcaster : XET::App::Broadcaster)
@@ -34,7 +46,7 @@ class XET::App::Broadcasters
   end
 
   def self.add?(broadcaster : XET::App::Broadcaster)
-    begin 
+    begin
       add(broadcaster)
       true
     rescue e : XET::App::Error::Broadcasters::NameAlreadyExists

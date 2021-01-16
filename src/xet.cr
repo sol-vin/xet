@@ -1,3 +1,4 @@
+alias IString = (String | Int32)
 require "io"
 require "json"
 require "socket"

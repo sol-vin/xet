@@ -1,3 +1,5 @@
+# This macro makes a command using scaffolding in conjunction with `nest` and `field`.
+# Allows you to quickly make and store XET::Message subclasses undet XET::Command, making cleaner and DRYer code.
 macro command(class_path, id, &block)
   {% raise "command: class_path was not a Path" unless class_path.is_a? Path %}
   {% raise "command: id was not a NumberLiteral" unless id.is_a? NumberLiteral %}
@@ -7,6 +9,7 @@ macro command(class_path, id, &block)
     include JSON::Serializable
     ID = {{id}}_u16
 
+    # We have to define these variables or we are going to get invalid memory access.
     macro finished
       @type = 0xff_u8
       @version = 0x01_u8
@@ -21,6 +24,7 @@ macro command(class_path, id, &block)
       @message = ""
 
       def initialize(
+        # This enables all the XET::Message variables to be changed from initialize
         @type = 0xff_u8,
         @version = 0x01_u8,
         @reserved1 = 0x00_u8,
@@ -32,6 +36,7 @@ macro command(class_path, id, &block)
         @id = ID,
         @size = 0_u32,
         @message = "",
+        # This adds all the fields to the initialize args.
         {% verbatim do %}
           {% for m in @type.methods.select {|m| m.annotation(XET::Field) } %}
             @{{m.name.id}}  : {{m.annotation(XET::Field).named_args[:type]}} = {{m.annotation(XET::Field).named_args[:default]}},

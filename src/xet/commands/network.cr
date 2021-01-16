@@ -3,8 +3,9 @@ command Network::Common::Request, id: 0x05fa
 {% begin %}
 command Network::Common::Reply, id: 0x05fb do
   nest config, Config, "NetWork.NetCommon" do
+    field? build_date, String, "BuildDate"
     field? channel_num, UInt32, "ChannelNum"
-    field? device_type, String, "DeviceType"
+    field? device_type, IString, "DeviceType"
     field? gateway, String, "GateWay"
     field? host_ip, String, "HostIP"
     field? hostname, String, "HostName"
