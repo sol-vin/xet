@@ -11,12 +11,12 @@ module XET::App
 end
 
 class XET::App::Broadcaster
-  @incoming_netcom = Channel(XET::Command::Network::Common::Reply).new
+  @outgoing_netcom = Channel(XET::Command::Network::Common::Reply).new
 
   getter port : UInt16
 
-  def initialize(@port = XET::DEFAULT_DISCOVERY_PORT, @interval = 20)
-    @incoming_netcom.close
+  def initialize(@port = XET::DEFAULT_DISCOVERY_PORT, @interval = 20, @dump_outgoing = true)
+    @outgoing_netcom.close
     @socket = XET::Socket::UDP.new(XET::App.broadcast_ip, @port)
     @socket.bind ::Socket::IPAddress.new(XET::App.server_ip, @port.to_i32)
     Log.info {"Bound to interface #{ARGV[1]} @ #{XET::App.server_ip} on #{@port}"}
@@ -31,14 +31,18 @@ class XET::App::Broadcaster
     @socket.broadcast = true
   end
 
+  def close
+    @socket.close
+  end
+
   def is_listening?
-    !@incoming_netcom.closed?
+    !@outgoing_netcom.closed?
   end
 
   def start_listening
-    if @incoming_netcom.closed?
+    if @outgoing_netcom.closed?
       Log.info { "Starting listening on #{port}" }
-      @incoming_netcom = Channel(XET::Command::Network::Common::Reply).new
+      @outgoing_netcom = Channel(XET::Command::Network::Common::Reply).new
       _spawn_listen_fiber
     else
       raise XET::App::Error::Broadcaster::AlreadyListening.new
@@ -46,34 +50,36 @@ class XET::App::Broadcaster
   end
 
   def stop_listening
-    unless @incoming_netcom.closed?
+    unless @outgoing_netcom.closed?
       Log.info { "Stopping listening on #{port}" }
-      @incoming_netcom.close
+      @outgoing_netcom.close
     end
   end
 
   def listen?
-    @incoming_netcom.receive?
+    @outgoing_netcom.receive?
   end
 
   private def _spawn_listen_fiber
     spawn(name: "XET::App::Broadcaster -> Listen Fiber") do
-      until @incoming_netcom.closed?
+      until @outgoing_netcom.closed?
         begin
           xmsg = @socket.receive_message
-          Log.info { "Got a potential reply from #{xmsg.message}" }
+          Log.debug { "Got a potential reply from #{xmsg.message}" }
           netcom_reply = XET::Command::Network::Common::Reply.from_msg(xmsg)
-          Log.info { "Got parsed reply from #{netcom_reply.message}" }
+          Log.debug { "Got parsed reply from #{netcom_reply.message}" }
           spawn(name: "XET::App::Broadcaster -> Listen Fiber -> Sending NetCom Result") do
             begin
-              @incoming_netcom.send netcom_reply
+              if @dump_outgoing
+                spawn { @outgoing_netcom.send netcom_reply }
+              end
+              XET::App::FoundDevices.add? netcom_reply
             rescue e : Channel::ClosedError
             end
           end
         rescue exception : XET::Error::Command::CannotParse
           Log.info { "Couldn't parse message" }
         rescue exception : XET::Error::Receive::Timeout
-          Log.info { "Recieved a timeout" }
         rescue exception : XET::Error::Receive
           if exception.is_a?(XET::Error::Receive::Timeout)
           else

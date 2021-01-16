@@ -45,3 +45,10 @@ get "/api/broadcasters/:port/stop_broadcasting" do |env|
 rescue e
   Log.error { "#{e}" }
 end
+
+get "/api/broadcasters/:port/delete" do |env|
+  port = env.params.url["port"].to_u16
+  XET::App::Broadcasters.delete port
+rescue e
+  Log.error { "#{e}" }
+end

@@ -40,7 +40,7 @@ class XET::App::Broadcasters
       if !(@@broadcasters.keys.any? { |broadcaster| port == broadcaster.port })
         @@broadcasters[broadcaster.port] = broadcaster
       else
-        raise XET::App::Error::Broadcasters::NameAlreadyExists
+        raise XET::App::Error::Broadcasters::NameAlreadyExists.new
       end
     end
   end
@@ -56,7 +56,13 @@ class XET::App::Broadcasters
 
   def self.delete(port)
     @@broadcasters_mutex.synchronize do
-      @@broadcasters.delete port
+      if broadcaster = @@broadcasters[port]
+        broadcaster.stop_listening
+        broadcaster.stop_broadcasting
+        broadcaster.close
+        @@broadcasters.delete port
+      end
     end
   end
 end
+
