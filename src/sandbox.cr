@@ -18,14 +18,14 @@ msg = XET::Command::Network::Common::Reply.new(
     serial_number: "123456ABCDEF",
     ssl_port: 443_u16,
     submask: ::Socket::IPAddress.new("255.255.255.0", 0),
-    # tcp_max_connection: 444_u32,
-    # tcp_port: 999_u16,
-    # transfer_plan: "srslyidk",
-    # udp_port: 321_u16,
-    # use_hs_download: true,
+    tcp_max_connections: 444_u32,
+    tcp_port: 999_u16,
+    transfer_plan: "srslyidk",
+    udp_port: 321_u16,
+    use_hs_download: true
   ),
   ret: 1234,
-  session_id: 0xAABBCCDD_u32
+  session_id_message: XET::SessionID.new(0xAABBCCDD_u32)
 )
 xmsg = XET::Command::Network::Common::Reply.from_msg(msg.as(XET::Message))
 

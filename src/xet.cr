@@ -6,6 +6,7 @@ require "uuid"
 
 require "./xet/errors"
 require "./xet/ipaddress"
+require "./xet/session_id"
 
 require "./xet/info/**"
 require "./xet/macros/**"

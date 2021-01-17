@@ -15,7 +15,7 @@ struct ::Socket::IPAddress
   end
 
   def self.to_json(value : ::Socket::IPAddress, build : JSON::Builder)
-    build.string("0x#{value.address.split(".").reverse.map(&.to_i.to_s(16).rjust(2, '0')).join}")
+    build.string("0x#{value.address.split(".").reverse.map(&.to_i.to_s(16).upcase.rjust(2, '0')).join}")
   end
 
   def initialize(pull : JSON::PullParser)

@@ -24,6 +24,6 @@ command Network::Common::Reply, id: 0x05fb do
     field? use_hs_download, Bool, "UseHSDownLoad"
   end
   field? ret, Int32, "Ret"
-  field session_id_message, String, "SessionID", default: "0x00000000"
+  field session_id_message, XET::SessionID, "SessionID", default: XET::SessionID.new(0x12345678_u32)
 end
 
