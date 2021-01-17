@@ -1,4 +1,4 @@
-describe XET::Command do
+describe XET::Command::Operation::System::Upgrade::Reply do
   it "should be able to make a XET::Command::Operation::System::Upgrade::Reply json message" do
     xmsg = XET::Command::Operation::System::Upgrade::Reply.new(
       config: XET::Command::Operation::System::Upgrade::Reply::Config.new(

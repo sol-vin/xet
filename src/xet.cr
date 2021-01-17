@@ -5,6 +5,8 @@ require "socket"
 require "uuid"
 
 require "./xet/errors"
+require "./xet/ipaddress"
+
 require "./xet/info/**"
 require "./xet/macros/**"
 

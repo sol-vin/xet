@@ -30,7 +30,7 @@ macro field(var_name, type_node, field_name, default = nil)
   class ::{{@type}}
     {% if default %}
 
-    @[::JSON::Field(key: {{ field_name }})]
+    @[::JSON::Field(key: {{ field_name }}, default: {{ default }})]
     @{{ var_name.id }} : {{ type_node }}  = {{ default }}
 
     @[::XET::Field(type: {{ type_node }}, default: {{ default }})] # Put an annotation to tell the `command` macro what the default value should be for the `initialize` method. Kinda can;t believe it works this way :)
@@ -44,7 +44,7 @@ macro field(var_name, type_node, field_name, default = nil)
 
     {% else %}
 
-    @[::JSON::Field(key: {{ field_name }})]
+    @[::JSON::Field(key: {{ field_name }}, default: {{ type_node }}.new)]
     @{{ var_name.id }} : {{ type_node }}  = {{ type_node }}.new
 
     @[::XET::Field(type: {{ type_node }}, default: {{ type_node }}.new)] # Put an annotation to tell the `command` macro what the default value should be for the `initialize` method. Kinda can;t believe it works this way :)
