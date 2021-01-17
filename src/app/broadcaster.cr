@@ -15,7 +15,7 @@ class XET::App::Broadcaster
 
   getter port : UInt16
 
-  def initialize(@port = XET::DEFAULT_DISCOVERY_PORT, @interval = 20, @dump_outgoing = true)
+  def initialize(@port = XET::DEFAULT_DISCOVERY_PORT, @interval = 20)
     @outgoing_netcom.close
     @socket = XET::Socket::UDP.new(XET::App.broadcast_ip, @port)
     @socket.bind ::Socket::IPAddress.new(XET::App.server_ip, @port.to_i32)
@@ -32,6 +32,8 @@ class XET::App::Broadcaster
   end
 
   def close
+    stop_listening
+    stop_broadcasting
     @socket.close
   end
 
@@ -69,13 +71,11 @@ class XET::App::Broadcaster
           netcom_reply = XET::Command::Network::Common::Reply.from_msg(xmsg)
           Log.debug { "Got parsed reply from #{netcom_reply.message}" }
           spawn(name: "XET::App::Broadcaster -> Listen Fiber -> Sending NetCom Result") do
-            begin
-              if @dump_outgoing
-                spawn { @outgoing_netcom.send netcom_reply }
-              end
-              XET::App::FoundDevices.add? netcom_reply
+            spawn(name: "XET::App::Broadcaster -> Listen Fiber -> Sending NetCom Result -> Send to outgoing") do 
+              @outgoing_netcom.send netcom_reply 
             rescue e : Channel::ClosedError
             end
+            XET::App::FoundDevices.add? netcom_reply
           end
         rescue exception : XET::Error::Command::CannotParse
           Log.info { "Couldn't parse message" }
@@ -85,6 +85,8 @@ class XET::App::Broadcaster
           else
             Log.info { "Listener on #{@port} had an exception: #{exception}" }
           end
+        rescue exception : XET::Error::Socket::Closed
+          # Socket closed so do nothing to gracefull exit
         end
       end
     end
@@ -117,6 +119,8 @@ class XET::App::Broadcaster
             @socket.send_message XET::Command::Network::Common::Request.new
           rescue e : XET::Error::Send
             Log.error {"Broadcaster on #{@port} had an exception: #{e}"}
+          rescue e : XET::Error::Socket::Closed
+            # Do nothing so it gracefully finishes
           end
         end
         sleep @interval

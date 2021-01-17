@@ -24,7 +24,7 @@ class XET::App::Targets
       if !(@@targets.keys.any? { |name| name == target.name })
         @@targets[target.name] = target
       else
-        raise XET::App::Error::Targets::NameAlreadyExists
+        raise XET::App::Error::Targets::NameAlreadyExists.new
       end
     end
   end
@@ -35,6 +35,13 @@ class XET::App::Targets
       true
     rescue e : XET::App::Error::Targets::NameAlreadyExists
       false
+    end
+  end
+
+  
+  def self.dup
+    @@targets_mutex.synchronize do
+      @@targets.dup
     end
   end
 

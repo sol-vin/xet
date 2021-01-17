@@ -4,9 +4,11 @@ class XET::App::Target
   property mac_address : String?
   property serial_number : String?
 
-  property tcp_port : Int32 = 0
-  property udp_port : Int32 = 0
-  property http_port : Int32 = 0
+  property tcp_port : UInt16?
+  property udp_port : UInt16?
+  property http_port : UInt16?
+  property ssl_port : UInt16?
+
 
   def initialize(@name)
   end

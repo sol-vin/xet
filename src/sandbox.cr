@@ -10,7 +10,7 @@ msg = XET::Command::Network::Common::Reply.new(
     host_ip: ::Socket::IPAddress.new("192.168.1.88", 0),
     hostname: "imahost",
     http_port: 80_u16,
-    mac: "11:22:33:44:55::66",
+    mac: "11:22:33:44:55:66",
     max_bps: 0_u32,
     mon_mode: "idk",
     net_connect_state: 123,

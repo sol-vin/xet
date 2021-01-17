@@ -203,6 +203,9 @@ class XET::Socket::UDP < UDPSocket
       XET::Message.from_s(packet_in[0])
     rescue e : IO::TimeoutError
       raise XET::Error::Receive::Timeout.new
+    rescue e : IO::Error
+      raise XET::Error::Socket::Closed.new if e.to_s.includes? "Closed"
+      raise e
     end
   end
 end

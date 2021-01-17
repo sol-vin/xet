@@ -1,0 +1,23 @@
+<table class="table table-light table-striped">
+  <thead>
+    <tr>
+      <th scope="col">Icon</th>
+      <th scope="col">IP</th>
+      <th scope="col">Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% XET::App::FoundDevices.dup.each do |ip, net_com_reply| %>
+    <tr>
+      <th scope="row">
+      </th>
+      <td><%= ip %></td>
+      <td>
+      <form>
+        <button formmethod="get" formaction="/api/targets/add_from_found/<%= ip %>" type="submit" class="btn btn-success"><i class="fa-thin fa-plus"></i></button>
+      </form>
+      </td>
+    </tr>
+    <% end %>
+  </tbody>
+</table>

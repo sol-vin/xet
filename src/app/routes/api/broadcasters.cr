@@ -1,4 +1,4 @@
-get "/api/broadcasters/:port/start_listening" do |env|
+get "/api/broadcasters/start_listening/:port/" do |env|
   port = env.params.url["port"].to_u16
   bcaster = XET::App::Broadcasters[port]
   unless bcaster.is_listening?
@@ -10,7 +10,7 @@ rescue e
   Log.error { "#{e}" }
 end
 
-get "/api/broadcasters/:port/stop_listening" do |env|
+get "/api/broadcasters/stop_listening/:port" do |env|
   port = env.params.url["port"].to_u16
   bcaster = XET::App::Broadcasters[port]
   unless !bcaster.is_listening?
@@ -22,7 +22,7 @@ rescue e
   Log.error { "#{e}" }
 end
 
-get "/api/broadcasters/:port/start_broadcasting" do |env|
+get "/api/broadcasters/start_broadcasting/:port" do |env|
   port = env.params.url["port"].to_u16
   bcaster = XET::App::Broadcasters[port]
   unless bcaster.is_broadcasting?
@@ -34,7 +34,7 @@ rescue e
   Log.error { "#{e}" }
 end
 
-get "/api/broadcasters/:port/stop_broadcasting" do |env|
+get "/api/broadcasters/stop_broadcasting/:port" do |env|
   port = env.params.url["port"].to_u16
   bcaster = XET::App::Broadcasters[port]
   unless !bcaster.is_broadcasting?
@@ -46,9 +46,27 @@ rescue e
   Log.error { "#{e}" }
 end
 
-get "/api/broadcasters/:port/delete" do |env|
+get "/api/broadcasters/delete/:port" do |env|
   port = env.params.url["port"].to_u16
   XET::App::Broadcasters.delete port
+  env.redirect(env.params.query["redirect"]? || "/")
+rescue e
+  Log.error { "#{e}" }
+end
+
+
+get "/api/broadcasters/add/:port" do |env|
+  port = env.params.url["port"].to_u16
+  XET::App::Broadcasters.add port
+  env.redirect(env.params.query["redirect"]? || "/")
+rescue e
+  Log.error { "#{e}" }
+end
+
+post "/api/broadcasters/add" do |env|
+  port = env.params.url["port"].to_u16
+  XET::App::Broadcasters.add port
+  env.redirect(env.params.query["redirect"]? || "/")
 rescue e
   Log.error { "#{e}" }
 end

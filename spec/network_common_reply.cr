@@ -1,4 +1,4 @@
-NETWORK_COMMON_REPLY_EXAMPLE = "{\"NetWork.NetCommon\":{\"BuildDate\":\"????\",\"ChannelNum\":1,\"DeviceType\":\"IPC\",\"GateWay\":\"0x0101A8C0\",\"HostIP\":\"0x5801A8C0\",\"HostName\":\"imahost\",\"HttpPort\":80,\"MAC\":\"11:22:33:44:55::66\",\"MaxBps\":0,\"MonMode\":\"idk\",\"NetConnectState\":123,\"OtherFunction\":\"asdfasdfsdf\",\"SN\":\"123456ABCDEF\",\"SSLPort\":443,\"Submask\":\"0x00FFFFFF\",\"TCPMaxConn\":444},\"Ret\":1234,\"SessionID\":\"0xAABBCCDD\"}"
+NETWORK_COMMON_REPLY_EXAMPLE = "{\"NetWork.NetCommon\":{\"BuildDate\":\"????\",\"ChannelNum\":1,\"DeviceType\":\"IPC\",\"GateWay\":\"0x0101A8C0\",\"HostIP\":\"0x5801A8C0\",\"HostName\":\"imahost\",\"HttpPort\":80,\"MAC\":\"11:22:33:44:55:66\",\"MaxBps\":0,\"MonMode\":\"idk\",\"NetConnectState\":123,\"OtherFunction\":\"asdfasdfsdf\",\"SN\":\"123456ABCDEF\",\"SSLPort\":443,\"Submask\":\"0x00FFFFFF\",\"TCPMaxConn\":444,\"TCPPort\":999,\"TransferPlan\":\"srslyidk\",\"UDPPort\":321,\"UseHSDownLoad\":true},\"Ret\":1234,\"SessionID\":\"0xAABBCCDD\"}"
 
 describe XET::Command::Network::Common::Reply do
   it "should be able to make a XET::Command::Network::Common::Reply json message" do
@@ -11,7 +11,7 @@ describe XET::Command::Network::Common::Reply do
         host_ip: ::Socket::IPAddress.new("192.168.1.88", 0),
         hostname: "imahost",
         http_port: 80_u16,
-        mac: "11:22:33:44:55::66",
+        mac: "11:22:33:44:55:66",
         max_bps: 0_u32,
         mon_mode: "idk",
         net_connect_state: 123,
@@ -20,10 +20,10 @@ describe XET::Command::Network::Common::Reply do
         ssl_port: 443_u16,
         submask: ::Socket::IPAddress.new("255.255.255.0", 0),
         tcp_max_connections: 444_u32,
-        # tcp_port: 999_u16,
-        # transfer_plan: "srslyidk",
-        # udp_port: 321_u16,
-        # use_hs_download: true
+        tcp_port: 999_u16,
+        transfer_plan: "srslyidk",
+        udp_port: 321_u16,
+        use_hs_download: true
       ),
       ret: 1234,
       session_id_message: XET::SessionID.new(0xAABBCCDD_u32)
@@ -42,7 +42,7 @@ describe XET::Command::Network::Common::Reply do
         host_ip: ::Socket::IPAddress.new("192.168.1.88", 0),
         hostname: "imahost",
         http_port: 80_u16,
-        mac: "11:22:33:44:55::66",
+        mac: "11:22:33:44:55:66",
         max_bps: 0_u32,
         mon_mode: "idk",
         net_connect_state: 123,
@@ -51,10 +51,10 @@ describe XET::Command::Network::Common::Reply do
         ssl_port: 443_u16,
         submask: ::Socket::IPAddress.new("255.255.255.0", 0),
         tcp_max_connections: 444_u32,
-        # tcp_port: 999_u16,
-        # transfer_plan: "srslyidk",
-        # udp_port: 321_u16,
-        # use_hs_download: true
+        tcp_port: 999_u16,
+        transfer_plan: "srslyidk",
+        udp_port: 321_u16,
+        use_hs_download: true
       ),
       ret: 1234,
       session_id_message: XET::SessionID.new(0xAABBCCDD_u32)
@@ -73,7 +73,7 @@ describe XET::Command::Network::Common::Reply do
         host_ip: ::Socket::IPAddress.new("192.168.1.88", 0),
         hostname: "imahost",
         http_port: 80_u16,
-        mac: "11:22:33:44:55::66",
+        mac: "11:22:33:44:55:66",
         max_bps: 0_u32,
         mon_mode: "idk",
         net_connect_state: 123,
@@ -82,10 +82,10 @@ describe XET::Command::Network::Common::Reply do
         ssl_port: 443_u16,
         submask: ::Socket::IPAddress.new("255.255.255.0", 0),
         tcp_max_connections: 444_u32,
-        # tcp_port: 999_u16,
-        # transfer_plan: "srslyidk",
-        # udp_port: 321_u16,
-        # use_hs_download: true
+        tcp_port: 999_u16,
+        transfer_plan: "srslyidk",
+        udp_port: 321_u16,
+        use_hs_download: true
       ),
       ret: 1234,
       session_id_message: XET::SessionID.new(0xAABBCCDD_u32)

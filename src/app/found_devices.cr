@@ -47,9 +47,10 @@ class XET::App::FoundDevices
 
   def self.add(net_com_reply : XET::Command::Network::Common::Reply)
     @@found_devices_mutex.synchronize do
-      if !(@@found_devices.keys.any? { |host_ip| host_ip == net_com_reply.config.host_ip })
-        @@found_devices[net_com_reply.config.host_ip.to_s] = net_com_reply
-        Log.info { "Found device #{net_com_reply.config.host_ip.to_s}" }
+      address = net_com_reply.config.try(&.host_ip).try(&.address)
+      if address && !(@@found_devices.keys.any? { |host_ip| host_ip == address})
+        @@found_devices[address] = net_com_reply
+        Log.info { "Found device #{address}" }
       else
         raise XET::App::Error::FoundDevices::IPAlreadyExists.new
       end

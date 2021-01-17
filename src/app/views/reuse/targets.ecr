@@ -1,0 +1,17 @@
+<table class="table table-light table-striped">
+  <tbody>
+    <% XET::App::Targets.dup.each do |name, target| %>
+    <tr>
+      <th scope="row">
+        <%= name %>
+      </th>
+      <td><%= target.ip_address %></td>
+      <td>
+      <form>
+        <button formmethod="get" formaction="/api/targets/delete/<%= name %>" type="submit" class="btn btn-danger"><i class="fa-thin fa-trash-can"></i></button>
+      </form>
+      </td>
+    </tr>
+    <% end %>
+  </tbody>
+</table>

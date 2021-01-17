@@ -6,19 +6,19 @@ require "interface_address"
 require "./xet"
 
 require "./app/macros/**"
-require "./app/routes/**"
 require "./app/target"
 require "./app/targets"
 require "./app/found_devices"
 require "./app/broadcaster"
 require "./app/broadcasters"
-
+require "./app/routes/**"
 
 module XET::App
   class_getter interface = ARGV[1]? || ""
   class_property broadcast_ip = ::Socket::IPAddress::BROADCAST
   class_property server_ip = ::Socket::IPAddress::UNSPECIFIED
 end
+
 
 if ARGV[1]?
   ifs = InterfaceAddress.get_interface_addresses.select { |i| i.interface_name == "enp3s0" && i.ip_address.family.inet? }

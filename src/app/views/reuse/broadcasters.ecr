@@ -3,7 +3,6 @@
     <tr>
       <th scope="col"></th>
       <th scope="col">Port</th>
-      <th scope="col">Clients Found</th>
       <th scope="col">Actions</th>
     </tr>
   </thead>
@@ -22,21 +21,20 @@
         <% end %>
       </th>
       <td><%= bcaster.port %></td>
-      <td><%= XET::App::FoundDevices.size %></td>
       <td>
       <form>
       <% if bcaster.is_listening? %>
-        <button formmethod="get" formaction="/api/broadcasters/<%= bcaster.port %>/stop_listening" type="submit" class="btn btn-warning"><i class="fa-thin fa-ear-deaf"></i></button>
+        <button formmethod="get" formaction="/api/broadcasters/stop_listening/<%= bcaster.port %>" type="submit" class="btn btn-warning"><i class="fa-thin fa-ear-deaf"></i></button>
       <% else %>
-        <button formmethod="get" formaction="/api/broadcasters/<%= bcaster.port %>/start_listening" type="submit" class="btn btn-primary"><i class="fa-thin fa-ear"></i></button>
+        <button formmethod="get" formaction="/api/broadcasters/start_listening/<%= bcaster.port %>" type="submit" class="btn btn-primary"><i class="fa-thin fa-ear"></i></button>
       <% end %>
 
       <% if bcaster.is_broadcasting? %>
-        <button formmethod="get" formaction="/api/broadcasters/<%= bcaster.port %>/stop_broadcasting" type="submit" class="btn btn-warning"><i class="fa-thin fa-microphone-slash"></i></button>
+        <button formmethod="get" formaction="/api/broadcasters/stop_broadcasting/<%= bcaster.port %>" type="submit" class="btn btn-warning"><i class="fa-thin fa-microphone-slash"></i></button>
       <% else %>
-        <button formmethod="get" formaction="/api/broadcasters/<%= bcaster.port %>/start_broadcasting" type="submit" class="btn btn-primary"><i class="fa-thin fa-microphone"></i></button>
+        <button formmethod="get" formaction="/api/broadcasters/start_broadcasting/<%= bcaster.port %>" type="submit" class="btn btn-primary"><i class="fa-thin fa-microphone"></i></button>
       <% end %>
-        <button formmethod="get" formaction="/api/broadcasters/<%= bcaster.port %>/delete" type="submit" class="btn btn-danger"><i class="fa-thin fa-trash-can"></i></button>
+        <button formmethod="get" formaction="/api/broadcasters/delete/<%= bcaster.port %>" type="submit" class="btn btn-danger"><i class="fa-thin fa-trash-can"></i></button>
 
       </form>
       </td>

@@ -35,12 +35,31 @@ class XET::App::Broadcasters
     end
   end
 
+  def self.add(port : UInt16)
+    @@broadcasters_mutex.synchronize do
+      if !(@@broadcasters.keys.any? { |o_port| port == o_port })
+        @@broadcasters[port] = XET::App::Broadcaster.new port
+      else
+        raise XET::App::Error::Broadcasters::PortAlreadyExists.new
+      end
+    end
+  end
+
+  def self.add?(port : UInt16)
+    begin
+      add(port)
+      true
+    rescue e : XET::App::Error::Broadcasters::PortAlreadyExists
+      false
+    end
+  end
+
   def self.add(broadcaster : XET::App::Broadcaster)
     @@broadcasters_mutex.synchronize do
       if !(@@broadcasters.keys.any? { |broadcaster| port == broadcaster.port })
         @@broadcasters[broadcaster.port] = broadcaster
       else
-        raise XET::App::Error::Broadcasters::NameAlreadyExists.new
+        raise XET::App::Error::Broadcasters::PortAlreadyExists.new
       end
     end
   end
@@ -49,7 +68,7 @@ class XET::App::Broadcasters
     begin
       add(broadcaster)
       true
-    rescue e : XET::App::Error::Broadcasters::NameAlreadyExists
+    rescue e : XET::App::Error::Broadcasters::PortAlreadyExists
       false
     end
   end
