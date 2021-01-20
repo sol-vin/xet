@@ -5,10 +5,10 @@
       <th scope="row">
         <%= name %>
       </th>
-      <td><%= target.ip_address %></td>
+      <td><%= target.config.try(&.host_ip).try(&.address) %></td>
       <td>
       <form>
-        <button formmethod="get" formaction="/api/targets/delete/<%= name %>" type="submit" class="btn btn-danger"><i class="fa-thin fa-trash-can"></i></button>
+        <button formmethod="get" formaction="/api/targets/delete/<%= HTML.escape name %>" type="submit" class="btn btn-danger"><i class="fa-thin fa-trash-can"></i></button>
       </form>
       </td>
     </tr>

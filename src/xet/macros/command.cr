@@ -12,7 +12,7 @@ macro command(class_path, id, &block)
     # We have to define these variables or we are going to get invalid memory access.
     macro finished
       @type = 0xff_u8
-      @version = 0x01_u8
+      @version = 0x00_u8
       @reserved1 = 0x00_u8
       @reserved2 = 0x00_u8
       @session_id = 0_u32
@@ -26,7 +26,7 @@ macro command(class_path, id, &block)
       def initialize(
         # This enables all the XET::Message variables to be changed from initialize
         @type = 0xff_u8,
-        @version = 0x01_u8,
+        @version = 0x00_u8,
         @reserved1 = 0x00_u8,
         @reserved2 = 0x00_u8,
         @session_id = 0_u32,

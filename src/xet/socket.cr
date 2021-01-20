@@ -1,4 +1,4 @@
-module XET::Socket
+module ::XET::Socket
   getter target = ::Socket::IPAddress.new("0.0.0.0", 0)
 
   def set_target(socket_ip)
@@ -15,23 +15,32 @@ module XET::Socket
     @target.port != 0
   end
 
-  def login(username = "admin", password = "password", encryption_type = "MD5")
+  def login(username = "admin", password = "", encryption_type = "MD5")
     begin
       #self.send_message(XET::Command::Bits::Request.new)
       if encryption_type == "MD5"
           password = XET::Hash.digest(password)
       end
       login_command = XET::Command::Login::Request.new(username: username, password: password, encryption_type: encryption_type)
+      Log.debug { "XET::Socket: Sending login to #{@target.address}:#{@target.port}" }
       self.send_raw_message login_command.to_s
+      ::Log.info { "XET::Socket: Sent login to #{@target.address}:#{@target.port}" }
+
       reply = receive_message
+      ::Log.info { "XET::Socket: Received Reply from #{@target.address}:#{@target.port}" }
+
       begin
-        unless [ XET::Command::Login::Ret::ADMIN_SUCCESS,  XET::Command::Login::Ret::DEFAULT_SUCCESS].includes? JSON.parse(reply.message)["Ret"]
+        net_com_reply = XET::Command::Network::Common::Reply.from_msg(reply)
+        ::Log.info {  "XET::Socket.login: GOT: #{JSON.parse(reply.message)["Ret"]} from #{@target.address}:#{@target.port}" }
+        unless [ XET::Command::Login::Ret::ADMIN_SUCCESS,  XET::Command::Login::Ret::DEFAULT_SUCCESS].includes? net_com_reply.ret
           raise XET::Error::Login::Failure.new
         end
       rescue e
         # Specially filter out json "unexpected char/token" error
         raise e unless e.to_s =~ /^[Uu]nexpected/
       end
+    rescue XET::Error::Command::CannotParse
+      raise XET::Error::Login::Failure.new
     rescue e : IO::EOFError
       raise XET::Error::Login::EOF.new
     rescue e : IO::TimeoutError
@@ -56,12 +65,9 @@ module XET::Socket
   def receive_message : XET::Message
     begin
       if closed?
-        raise XET::Error::Socket::Closed
+        raise XET::Error::Socket::Closed.new
       else
         m = XET::Message.new
-        m.sender_ip = @target.address
-        m.sender_port = @target.port
-        m.received = true
         m.type = self.read_bytes(UInt8, IO::ByteFormat::LittleEndian)
         m.version = self.read_bytes(UInt8, IO::ByteFormat::LittleEndian)
         m.reserved1 = self.read_bytes(UInt8, IO::ByteFormat::LittleEndian)

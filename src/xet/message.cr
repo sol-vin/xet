@@ -48,7 +48,7 @@ class XET::Message
     m
   end
 
-  def initialize(@type = 0xff_u8, @version = 0x01_u8, @reserved1 = 0x00_u8, @reserved2 = 0x00_u8, @session_id = 0_u32, @sequence = 0_u32, @total_packets = 0_u8, @current_packet = 0_u8, @id = 0_u16, @size = 0_u32, @message = "")
+  def initialize(@type = 0xff_u8, @version = 0x00_u8, @reserved1 = 0x00_u8, @reserved2 = 0x00_u8, @session_id = 0_u32, @sequence = 0_u32, @total_packets = 0_u8, @current_packet = 0_u8, @id = 0_u16, @size = 0_u32, @message = "")
   end
   
   # The message should have a \x00 byte at the end, so size counts will be off by one

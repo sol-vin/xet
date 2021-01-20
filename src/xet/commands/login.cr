@@ -1,7 +1,7 @@
 module XET::Command::Login
   module Ret
-    SUCCESS = 100
-    UNKNOWN = 106
+    ADMIN_SUCCESS = 100
+    DEFAULT_SUCCESS = 106
     FAILURE = 205
     UNKNOWN_FAILURE = 206
   end
