@@ -1,0 +1,25 @@
+<table class="table table-light table-striped">
+  <tbody>
+    <% XET::App::Targets.dup.each do |name, target| %>
+    <tr>
+      <th scope="row">
+        <%= name %>
+      </th>
+      <td><%= target.config.try(&.host_ip).try(&.address) %></td>
+      <td>
+        <div class="row justify-content-end">
+          <div class="col-auto">
+            <a href="/target/edit/<%= URI.encode name %>" type="submit" class="btn btn-primary"><i class="fa-thin fa-pen-to-square"></i></a>
+          </div>
+          <div class="col-auto">
+            <a href="/tools/on_target/<%= URI.encode name %>" type="submit" class="btn btn-warning"><i class="fa-thin fa-crosshairs"></i></a>
+          </div>
+          <div class="col-auto">
+            <a href="/api/targets/delete/<%= URI.encode name %>" type="submit" class="btn btn-danger"><i class="fa-thin fa-trash-can"></i></a>
+          </div>
+        </div>
+      </td>
+    </tr>
+    <% end %>
+  </tbody>
+</table>

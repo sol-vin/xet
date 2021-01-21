@@ -5,10 +5,9 @@
       <div class="w-100 home-title">
         <h3><i class="fa-thin fa-bullseye-arrow mx-2 home-title"></i>Targets<a class="btn btn-success btn-sm ms-2" href="/target/add"><i class="fa-thin fa-plus"></i></a></h3>
       </div>
+      <hr>
+      <%= render_file("target/list") %>
     </div>
-    <hr>
-      <%= render_file("targets") %>
-    <hr>
   </div>
   <div class="col">
     <div class="p-3 rounded bg-light">
@@ -16,8 +15,7 @@
         <h3><i class="fa-thin fa-server mx-2 home-title"></i>Found Devices</h3>
       </div>
       <hr>
-        <%= render_file("found_devices") %>
-      <hr>
+      <%= render_file("found_devices") %>
     </div>
   </div>
 </div>
@@ -29,7 +27,7 @@
       <hr>
         <%= render_file "broadcaster/add_form" %>
       <hr>
-      <%= render_file("broadcasters") %>
+      <%= render_file("broadcaster/list") %>
       <hr>
       </div>
     </div>

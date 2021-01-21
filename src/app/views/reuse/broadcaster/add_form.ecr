@@ -1,9 +1,14 @@
 <form method="post" action="/api/broadcasters/add" id="add-broadcaster" class="m-8 w-100 add-broadcaster-form">
   <div class="row g-3 ">
     <div class="col-6">
-      <input id="port" type="number" name="port" class="form-control" placeholder="Port" aria-label="Port" required>
+      <div class="input-group mb-3">
+        <div class="input-group-prepend">
+          <span class="input-group-text" id="port-label"><i class="fa-thin fa-radar me-2"></i>Port</span>
+        </div>
+        <input name="port" type="number" class="form-control" aria-describedby="port-label" min="0" max="65535" value="<%= XET::DEFAULT_DISCOVERY_PORT %>">
+      </div>
     </div>
-    <div class="col-4 home-title">
+    <div class="col-4 home-title align-content-end">
       <input type="submit" class="btn btn-primary" value="Submit">
     </div>
   </div>

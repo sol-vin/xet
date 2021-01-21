@@ -1,3 +1,3 @@
 get "/" do
-  render_page "home"
+  render_page "home/main"
 end

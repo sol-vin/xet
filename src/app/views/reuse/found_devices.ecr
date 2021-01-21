@@ -1,7 +1,7 @@
 <table class="table table-light table-striped">
   <thead>
     <tr>
-      <th scope="col">Icon</th>
+      <th scope="col">Type</th>
       <th scope="col">IP</th>
       <th scope="col">Actions</th>
     </tr>
@@ -10,6 +10,7 @@
     <% XET::App::FoundDevices.dup.each do |ip, net_com_reply| %>
     <tr>
       <th scope="row">
+        <i class="fa-thin fa-camera-cctv"></i>
       </th>
       <td><%= ip %></td>
       <td>

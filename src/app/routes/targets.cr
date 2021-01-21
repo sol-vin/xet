@@ -1,3 +1,3 @@
 get "/target/add" do |env|
-  render_page("add_target")
+  render_page("target/add")
 end

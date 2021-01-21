@@ -21,14 +21,11 @@ require "./xet/commands/network"
 require "./xet/commands/operation"
 require "./xet/commands/systeminfo"
 
-
-
 require "./xet/socket"
-
-
 
 module XET
   VERSION                = {{ `shards version #{__DIR__}`.chomp.stringify }}
+  DEFAULT_HTTP_PORT      = 80_u16
   DEFAULT_TCP_PORT       = 34567_u16
   DEFAULT_UDP_PORT       = 34568_u16
   DEFAULT_DISCOVERY_PORT = 34569_u16

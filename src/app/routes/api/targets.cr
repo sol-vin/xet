@@ -5,7 +5,7 @@ get "/api/targets/add_from_found/:ip" do |env|
       target = XET::App::Target.new("New Camera#{host_ip.hash}")
       target.config = net_com_reply.config
       
-      Log.info {"Added target! #{host_ip}"} if XET::App::Targets.add?(target)
+      Log.info { "Added target! #{host_ip}" } if XET::App::Targets.add?(target)
     end
   rescue exception
     
