@@ -1,12 +1,9 @@
 require "./app_lib"
 
-socket = XET::App::Broadcaster.new
-socket.start_listening
-socket.start_broadcasting
+xmsg = XET::Command::Network::Common::Reply.new(
+  config: XET::Command::Network::Common::Reply::Config.new(
+    build_date: "whenever"
+  )
+)
 
-sleep 1
-puts socket.listen?
-puts socket.listen?
-sleep 1
-socket.close
-sleep 1
+puts xmsg.to_json
