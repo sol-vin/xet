@@ -1,8 +1,9 @@
 # This macro makes a command using scaffolding in conjunction with `nest` and `field`.
 # Allows you to quickly make and store XET::Message subclasses undet XET::Command, making cleaner and DRYer code.
-macro command(class_path, id, &block)
+macro command(class_path, id, build_message = true, &block)
   {% raise "command: class_path was not a Path" unless class_path.is_a? Path %}
   {% raise "command: id was not a NumberLiteral" unless id.is_a? NumberLiteral %}
+
 
   {% begin %}
   class ::XET::Command::{{class_path.id}} < XET::Message
@@ -11,30 +12,30 @@ macro command(class_path, id, &block)
 
     # We have to define these variables or we are going to get invalid memory access.
     macro finished
-      @type = 0xff_u8
-      @version = 0x00_u8
-      @reserved1 = 0x00_u8
-      @reserved2 = 0x00_u8
-      @session_id = 0_u32
-      @sequence = 0_u32
-      @total_packets = 0_u8
-      @current_packet = 0_u8
+      @type = XET::Message::Defaults::TYPE
+      @version = XET::Message::Defaults::VERSION
+      @reserved1 = XET::Message::Defaults::RESERVED1
+      @reserved2 = XET::Message::Defaults::RESERVED2
+      @session_id = XET::Message::Defaults::SESSION_ID
+      @sequence = XET::Message::Defaults::SEQUENCE
+      @total_packets = XET::Message::Defaults::TOTAL_PACKETS
+      @current_packet = XET::Message::Defaults::CURRENT_PACKET
       @id = ID
-      @size = 0_u32
+      @size = XET::Message::Defaults::SIZE
       @message = ""
 
       def initialize(
         # This enables all the XET::Message variables to be changed from initialize
-        @type = 0xff_u8,
-        @version = 0x00_u8,
-        @reserved1 = 0x00_u8,
-        @reserved2 = 0x00_u8,
-        @session_id = 0_u32,
-        @sequence = 0_u32,
-        @total_packets = 0_u8,
-        @current_packet = 0_u8,
+        @type = XET::Message::Defaults::TYPE,
+        @version = XET::Message::Defaults::VERSION,
+        @reserved1 = XET::Message::Defaults::RESERVED1,
+        @reserved2 = XET::Message::Defaults::RESERVED2,
+        @session_id = XET::Message::Defaults::SESSION_ID,
+        @sequence = XET::Message::Defaults::SEQUENCE,
+        @total_packets = XET::Message::Defaults::TOTAL_PACKETS,
+        @current_packet = XET::Message::Defaults::CURRENT_PACKET,
         @id = ID,
-        @size = 0_u32,
+        @size = XET::Message::Defaults::SIZE,
         @message = "",
         # This adds all the fields to the initialize args.
         {% verbatim do %}
@@ -43,8 +44,9 @@ macro command(class_path, id, &block)
           {% end %}
         {% end %}
       )
-
+      {% if (block && build_message) %}
       build_message!
+      {% end %}
 
       end
     end
@@ -69,7 +71,9 @@ macro command(class_path, id, &block)
         parsed_command.size = msg.size
         parsed_command.message = msg.message
         parsed_command.use_custom_size = msg.use_custom_size?
+        {% if (block && build_message)%}
         parsed_command.build_message!
+        {% end  %}
         parsed_command
       rescue exception : JSON::ParseException
         raise XET::Error::Command::CannotParse.new

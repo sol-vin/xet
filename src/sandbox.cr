@@ -1,7 +1,12 @@
-require "./xet"
+require "./app_lib"
 
-socket = XET::Socket::TCP.new("10.0.0.5", 34567)
-socket.login
+socket = XET::App::Broadcaster.new
+socket.start_listening
+socket.start_broadcasting
 
-socket.send_message XET::Command::Network::Common::Request.new
-puts socket.receive_message.version
+sleep 1
+puts socket.listen?
+puts socket.listen?
+sleep 1
+socket.close
+sleep 1

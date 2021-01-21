@@ -17,12 +17,26 @@ module ::XET::Socket
 
   def login(username = "admin", password = "", encryption_type = "MD5")
     begin
-      #self.send_message(XET::Command::Bits::Request.new)
+      self.send_message(XET::Command::Bits::Request.new(
+        session_id: XET::Command::Bits::Request::SPECIAL_SESSION_ID,
+        bits: 0,
+        data_encryption_type: XET::Command::Bits::Request::DataEncryptionType.new(
+          aes: false
+        ),
+        aes: false,
+        encryption_algo: "",
+        login_encryption_type: XET::Command::Bits::Request::LoginEncryptionType.new(
+          md5: true,
+          none: true,
+          rsa: false
+        ),
+        public_key: ""
+      ))
       if encryption_type == "MD5"
           password = XET::Hash.digest(password)
       end
       login_command = XET::Command::Login::Request.new(username: username, password: password, encryption_type: encryption_type)
-      Log.debug { "XET::Socket: Sending login to #{@target.address}:#{@target.port}" }
+      ::Log.debug { "XET::Socket: Sending login to #{@target.address}:#{@target.port}" }
       self.send_raw_message login_command.to_s
       ::Log.info { "XET::Socket: Sent login to #{@target.address}:#{@target.port}" }
 

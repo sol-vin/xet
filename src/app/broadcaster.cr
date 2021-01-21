@@ -12,7 +12,8 @@ end
 
 class XET::App::Broadcaster
   @outgoing_netcom = Channel(XET::Command::Network::Common::Reply).new
-
+  @socket : XET::Socket::UDP
+  
   getter port : UInt16
 
   def initialize(@port = XET::DEFAULT_DISCOVERY_PORT, @interval = 20)

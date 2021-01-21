@@ -14,6 +14,15 @@ get "/api/targets/add_from_found/:ip" do |env|
   env.redirect "/"
 end
 
+post "/api/targets/add" do |env|
+  puts env.params.body.to_s
+  env.redirect "/"
+end
+
+get "/api/targets/add" do |env|
+  render_page("add_target")
+end
+
 get "/api/targets/delete/:name" do |env|
   begin
     name = HTML.unescape env.params.url["name"]

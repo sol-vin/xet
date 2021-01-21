@@ -1,0 +1,78 @@
+<form method="post" action="/api/targets/add" id="add-target" class="m-8 w-100 add-target-form">
+  <div class="row g-3">
+    <div class="col-auto">
+      <label for="name" class="form-label"><i class="fa-thin fa-tag"></i>Name</label>
+    </div>
+    <div class="col-auto">
+      <input name="name" id="name" type="text" class="form-control w-75" placeholder="Name" aria-label="Name" required>
+    </div>
+  </div>
+
+  <div class="row g-3">
+    <div class="col-auto">
+      <label for="name" class="form-label"><i class="fa-thin fa-server"></i>IP</label>
+    </div>
+    <div class="col-auto">
+      <input name="ip" id="ip" type="text" class="form-control w-75" placeholder="IP" aria-label="IP">
+    </div>
+  </div>
+
+  <div class="row g-3">
+    <div class="col-auto">
+      <label for="name" class="form-label"><i class="fa-thin fa-ethernet"></i>MAC</label>
+    </div>
+    <div class="col-auto">
+      <input name="mac" id="mac" type="text" class="form-control w-75" placeholder="MAC" aria-label="MAC">
+    </div>
+  </div>
+
+  <div class="row g-3">
+    <div class="col-auto">
+      <label for="name" class="form-label"><i class="fa-thin fa-rectangle-barcode"></i>Serial Number</label>
+    </div>
+    <div class="col-auto">
+      <input name="sn" id="sn" type="text" class="form-control w-75" placeholder="SN" aria-label="SN">
+    </div>
+  </div>
+
+  <div class="row g-3">
+    <div class="col-auto">
+      <input name="httpport" id="httpport" type="number" class="form-control" placeholder="80" aria-label="HTTP Port">
+    </div>
+    <div class="col-auto">
+      <input name="tcpport" id="tcpport" type="number" class="form-control" placeholder="34567" aria-label="TCP Port">
+    </div>
+    <div class="col-auto">
+      <input name="udpport" id="udpport" type="number" class="form-control" placeholder="34568" aria-label="UDP Port">
+    </div>
+    <div class="col-auto">
+      <input name="discoveryport" id="discoveryport" type="number" class="form-control" placeholder="34569" aria-label="Discovery Port">
+    </div>
+  </div>
+
+  <div class="row g-3">
+    <div class="col">
+      <div class="form-check form-check-inline">
+        <input class="form-check-input" type="checkbox" id="fingerprint">
+        <label class="form-check-label" for="fingerprint">Fingerprint this?</label>
+      </div>
+    </div>
+  </div>
+
+  
+  <div class="row g-3">
+    <div class="col">
+    </div>
+  </div>
+
+  <div class="row g-3">
+    <div class="col">
+    </div>
+  </div>
+
+  <div class="row g-3">
+    <div class="col">
+      <button type="submit" class="btn btn-primary">Submit</button>
+    </div>
+  </div>
+</form>

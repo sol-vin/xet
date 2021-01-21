@@ -8,6 +8,8 @@ get "/api/broadcasters/start_listening/:port/" do |env|
   env.redirect(env.params.query["redirect"]? || "/")
 rescue e
   Log.error { "#{e}" }
+  # TODO: Flash here
+  env.redirect(env.params.query["redirect"]? || "/")
 end
 
 get "/api/broadcasters/stop_listening/:port" do |env|
@@ -20,6 +22,8 @@ get "/api/broadcasters/stop_listening/:port" do |env|
   env.redirect(env.params.query["redirect"]? || "/")
 rescue e
   Log.error { "#{e}" }
+  # TODO: Flash here
+  env.redirect(env.params.query["redirect"]? || "/")
 end
 
 get "/api/broadcasters/start_broadcasting/:port" do |env|
@@ -32,6 +36,8 @@ get "/api/broadcasters/start_broadcasting/:port" do |env|
   env.redirect(env.params.query["redirect"]? || "/")
 rescue e
   Log.error { "#{e}" }
+  # TODO: Flash here
+  env.redirect(env.params.query["redirect"]? || "/")
 end
 
 get "/api/broadcasters/stop_broadcasting/:port" do |env|
@@ -44,6 +50,8 @@ get "/api/broadcasters/stop_broadcasting/:port" do |env|
   env.redirect(env.params.query["redirect"]? || "/")
 rescue e
   Log.error { "#{e}" }
+  # TODO: Flash here
+  env.redirect(env.params.query["redirect"]? || "/")
 end
 
 get "/api/broadcasters/delete/:port" do |env|
@@ -52,6 +60,8 @@ get "/api/broadcasters/delete/:port" do |env|
   env.redirect(env.params.query["redirect"]? || "/")
 rescue e
   Log.error { "#{e}" }
+  # TODO: Flash here
+  env.redirect(env.params.query["redirect"]? || "/")
 end
 
 
@@ -61,12 +71,16 @@ get "/api/broadcasters/add/:port" do |env|
   env.redirect(env.params.query["redirect"]? || "/")
 rescue e
   Log.error { "#{e}" }
+  # TODO: Flash here
+  env.redirect(env.params.query["redirect"]? || "/")
 end
 
 post "/api/broadcasters/add" do |env|
-  port = env.params.url["port"].to_u16
+  port = env.params.body["port"].as(String).to_u16
   XET::App::Broadcasters.add port
   env.redirect(env.params.query["redirect"]? || "/")
 rescue e
   Log.error { "#{e}" }
+  # TODO: Flash here
+  env.redirect(env.params.query["redirect"]? || "/")
 end

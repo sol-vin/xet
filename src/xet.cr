@@ -14,10 +14,17 @@ require "./xet/macros/**"
 
 require "./xet/hash"
 require "./xet/message"
-require "./xet/socket"
+
+require "./xet/commands/bits"
 require "./xet/commands/login"
 require "./xet/commands/network"
 require "./xet/commands/operation"
+require "./xet/commands/systeminfo"
+
+
+
+require "./xet/socket"
+
 
 
 module XET

@@ -1,32 +1,68 @@
-class XET::Message
-  include JSON::Serializable
-  
-  @[JSON::Field(ignore: true)]
-  property type : UInt8
-  @[JSON::Field(ignore: true)]
-  property version : UInt8
-  @[JSON::Field(ignore: true)]
-  property reserved1 : UInt8
-  @[JSON::Field(ignore: true)]
-  property reserved2 : UInt8
-  @[JSON::Field(ignore: true)]
-  property session_id : UInt32
-  @[JSON::Field(ignore: true)]
-  property sequence : UInt32
-  @[JSON::Field(ignore: true)]
-  property total_packets : UInt8
-  @[JSON::Field(ignore: true)]
-  property current_packet : UInt8
-  @[JSON::Field(ignore: true)]
-  property id : UInt16
-  @[JSON::Field(ignore: true)]
-  property size : UInt32
-  @[JSON::Field(ignore: true)]
-  property message : String
-  
-  @[JSON::Field(ignore: true)]
-  property? use_custom_size : Bool = false
+require "json"
 
+class XET::Message
+  module Defaults
+    TYPE          = 0xff_u8
+    VERSION       = 0x00_u8
+    RESERVED1     = 0x00_u8
+    RESERVED2     = 0x00_u8
+    SESSION_ID    =   0_u32
+    SEQUENCE      =   0_u32
+    TOTAL_PACKETS =    0_u8
+    CURRENT_PACKET = 0_u8
+    ID = 0_u16
+    SIZE = 0_u32
+  end
+
+  include JSON::Serializable
+
+  @[JSON::Field(ignore: true)]
+  # The type byte of the message, usually `0xFF`
+  property type : UInt8
+
+  @[JSON::Field(ignore: true)]
+  # The version byte of the message, usually `0x01`
+  property version : UInt8
+
+  @[JSON::Field(ignore: true)]
+  # A unused/unknown field
+  property reserved1 : UInt8
+
+  @[JSON::Field(ignore: true)]
+  # A unused/unknown field
+  property reserved2 : UInt8
+
+  @[JSON::Field(ignore: true)]
+  # The session id of the message. Not sure if this actually does anything
+  property session_id : UInt32
+
+  @[JSON::Field(ignore: true)]
+  # The number the packet is in line
+  property sequence : UInt32
+
+  @[JSON::Field(ignore: true)]
+  # How many packets total are being sent
+  property total_packets : UInt8
+
+  @[JSON::Field(ignore: true)]
+  # What packet in line we are
+  property current_packet : UInt8
+
+  @[JSON::Field(ignore: true)]
+  # The command id which controls which actions are run
+  property id : UInt16
+
+  @[JSON::Field(ignore: true)]
+  # The size of the message. WARNING: SETTING THIS TO 0x80000000 CAUSES CRASHES
+  property size : UInt32
+
+  @[JSON::Field(ignore: true)]
+  # The message
+  property message : String
+
+  @[JSON::Field(ignore: true)]
+  # If we should computer size automatically, or if we should set the variable manually.
+  property? use_custom_size : Bool = false
 
   def self.from_s(string) : XET::Message
     io = IO::Memory.new string
@@ -48,9 +84,19 @@ class XET::Message
     m
   end
 
-  def initialize(@type = 0xff_u8, @version = 0x00_u8, @reserved1 = 0x00_u8, @reserved2 = 0x00_u8, @session_id = 0_u32, @sequence = 0_u32, @total_packets = 0_u8, @current_packet = 0_u8, @id = 0_u16, @size = 0_u32, @message = "")
+  def initialize(@type = Defaults::TYPE,
+                 @version = Defaults::VERSION,
+                 @reserved1 = Defaults::RESERVED1,
+                 @reserved2 = Defaults::RESERVED2,
+                 @session_id = Defaults::SESSION_ID,
+                 @sequence = Defaults::SEQUENCE,
+                 @total_packets = Defaults::TOTAL_PACKETS,
+                 @current_packet = Defaults::CURRENT_PACKET,
+                 @id = Defaults::ID,
+                 @size = Defaults::SIZE,
+                 @message = "")
   end
-  
+
   # The message should have a \x00 byte at the end, so size counts will be off by one
   def actual_size
     message.size + 1
