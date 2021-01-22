@@ -9,6 +9,8 @@ targets:
     main: src/app.cr
   sb:
     main: src/sandbox.cr
+  xsocket:
+    main: src/cli/xsocket.cr
 dependencies:
   kemal:
     github: kemalcr/kemal
