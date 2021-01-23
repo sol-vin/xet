@@ -1,5 +1,5 @@
 require "option_parser"
-require "../app_lib"
+require "../xet"
 
 macro p_on(name, a_type, cmd_letter, message)
   parser.on("-{{cmd_letter.id}} {{name.upcase.id}}", "--{{name.id}}={{name.upcase.id}}", "{{message.id}} (default: #{XET::Message::Defaults::{{name.upcase.id}}})") do |msg_value|
@@ -152,6 +152,7 @@ begin
     socket.close
   elsif port_type == "udp"
     socket = XET::Socket::UDP.new(dest_ip.to_s, port)
+    socket.broadcast = true
     socket.read_timeout = timeout.seconds
     if login
       socket.login(username, password)

@@ -11,6 +11,8 @@ targets:
     main: src/sandbox.cr
   xsocket:
     main: src/cli/xsocket.cr
+  xmessage:
+    main: src/cli/xmessage.cr
 dependencies:
   kemal:
     github: kemalcr/kemal

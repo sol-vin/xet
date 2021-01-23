@@ -1,9 +1,4 @@
 require "./app_lib"
 
-xmsg = XET::Command::Network::Common::Reply.new(
-  config: XET::Command::Network::Common::Reply::Config.new(
-    build_date: "whenever"
-  )
-)
+pp XET::Commands.to_h
 
-puts xmsg.to_json
