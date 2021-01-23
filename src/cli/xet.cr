@@ -13,6 +13,11 @@ macro xsock_opts_parse(name, type)
       else
         value = %name.to_i
       end
+
+      {% if name.id == "size" %}
+      msg.use_custom_size = true
+      {% end %}
+        
       {% r_type = type.resolve %}
       {% if r_type == ::UInt8 %}
       msg.{{name.id}} = value.to_u8 
@@ -21,10 +26,7 @@ macro xsock_opts_parse(name, type)
       {% elsif r_type == ::UInt32 %}
       msg.{{name.id}} = value.to_u32
       {% elsif r_type == ::String %}
-      msg.{{name.id}} = value.to_u32
-        {% if name == :size %}
-      msg.use_custom_size = true
-        {% end %}
+      msg.{{name.id}} = value
       {% else %}
         raise "{{type}} not supported"
       {% end %}
@@ -133,12 +135,10 @@ module XET
           xsock_opts_parse(current_packet, UInt8)
           xsock_opts_parse(id, UInt16)
           xsock_opts_parse(size, UInt32)
-          msg.message = opts.message.to_s
-
-
+          msg.message = message if message = opts.message
 
           # Fix size
-          unless msg.use_custom_size?
+          if !msg.use_custom_size?
             msg.size = msg.message.size.to_u32
           end
 
@@ -223,6 +223,7 @@ module XET
 
           msg = template_class.new
 
+
           xsock_opts_parse(type, UInt8)
           xsock_opts_parse(version, UInt8)
           xsock_opts_parse(reserved1, UInt8)
@@ -233,12 +234,10 @@ module XET
           xsock_opts_parse(current_packet, UInt8)
           xsock_opts_parse(id, UInt16)
           xsock_opts_parse(size, UInt32)
-          msg.message = opts.message.to_s
-
-
-
+          msg.message = message if message = opts.message
+          
           # Fix size
-          unless msg.use_custom_size?
+          if !msg.use_custom_size?
             msg.size = msg.message.size.to_u32
           end
 

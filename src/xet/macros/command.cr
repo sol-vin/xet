@@ -11,7 +11,8 @@ macro command(class_path, id,
   current_packet = XET::Message::Defaults::CURRENT_PACKET,
   size = nil,
   message = "",
-  build_message = true, &block)
+  build_message = true,
+  &block)
 
   {% raise "command: class_path was not a Path" unless class_path.is_a? Path %}
   {% raise "command: id was not a NumberLiteral is a #{id.class_name}" unless id.is_a?(NumberLiteral) || id.is_a?(Path) %}
@@ -100,8 +101,10 @@ macro command(class_path, id,
 
       {% if message.is_a? Path %}
       @message = {{message.resolve}}
-      {% else %}
+      {% elsif message.is_a? StringLiteral %}
       @message = {{message}}
+      {% else %}
+      @message = ""
       {% end %}
 
 
@@ -167,8 +170,10 @@ macro command(class_path, id,
   
         {% if message.is_a? Path %}
         @message = {{message.resolve}},
-        {% else %}
+        {% elsif message.is_a? StringLiteral %}
         @message = {{message}},
+        {% else %}
+        @message = "",
         {% end %}
         # This adds all the fields to the initialize args.
         {% verbatim do %}
@@ -177,12 +182,17 @@ macro command(class_path, id,
           {% end %}
         {% end %}
       )
+      {% if size.is_a? Path || size.is_a? NumberLiteral %}
+      @use_custom_size = true
+      {% end %}
+
       {% if (block && build_message) %}
       build_message!
       {% end %}
 
       end
     end
+
   
     def build_message!
       @message = self.to_json
