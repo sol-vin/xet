@@ -20,7 +20,7 @@ class XET::App::Broadcaster
     @outgoing_netcom.close
     @socket = XET::Socket::UDP.new(XET::App.broadcast_ip, @port)
     @socket.bind ::Socket::IPAddress.new(XET::App.server_ip, @port.to_i32)
-    Log.info {"Bound to interface #{ARGV[1]} @ #{XET::App.server_ip} on #{@port}"}
+    Log.info {"Bound to #{XET::App.server_ip} on #{@port}"}
     @socket.broadcast = true
   end
 
@@ -28,7 +28,7 @@ class XET::App::Broadcaster
     @socket.close
     @socket = XET::Socket::UDP.new(XET::App.broadcast_ip, @port)
     @socket.bind ::Socket::IPAddress.new(XET::App.server_ip, @port.to_i32)
-    Log.info {"Bound to interface #{ARGV[1]} @ #{XET::App.server_ip} on #{@port}"}
+    Log.info {"Bound to #{XET::App.server_ip} on #{@port}"}
     @socket.broadcast = true
   end
 

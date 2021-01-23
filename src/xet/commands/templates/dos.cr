@@ -1,0 +1,1 @@
+command DoS::SizeIntOverflow, id: 0x03e8, size: 0x80000000_u32

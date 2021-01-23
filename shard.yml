@@ -5,14 +5,11 @@ authors:
   - Ian Rash <ian@sol.vin>
 
 targets:
-  app:
-    main: src/app.cr
   sb:
     main: src/sandbox.cr
-  xsocket:
-    main: src/cli/xsocket.cr
-  xmessage:
-    main: src/cli/xmessage.cr
+  xet:
+    main: src/cli/xet.cr
+    
 dependencies:
   kemal:
     github: kemalcr/kemal
@@ -23,7 +20,10 @@ dependencies:
   interface_address:
     github: t-richards/interface_address
     version: ~> 1.0.0
-    
+  clim:
+    github: at-grandpa/clim
+    version: 0.15.0
+
 crystal: 0.35.1
 
 license: MIT

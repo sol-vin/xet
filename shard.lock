@@ -1,5 +1,9 @@
 version: 2.0
 shards:
+  clim:
+    git: https://github.com/at-grandpa/clim.git
+    version: 0.15.0
+
   db:
     git: https://github.com/jgaskins/crystal-db.git
     version: 0.9.0+git.commit.1b4fdc4b2891d0f1e85cdb6f5276efedd2417057

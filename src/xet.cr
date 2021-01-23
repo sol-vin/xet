@@ -17,6 +17,8 @@ require "./xet/message"
 
 require "./xet/commands"
 
+require "./xet/commands/templates/**"
+
 require "./xet/commands/bits"
 require "./xet/commands/login"
 require "./xet/commands/network"
