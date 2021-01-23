@@ -8,6 +8,9 @@ command System::Info::Reply, id: 0x03fd do
   nest config, Config, "SystemInfo" do
     field? alarm_in_channel, UInt32, "AlarmInChannel"
     field? alarm_out_channel, UInt32, "AlarmOutChannel"
+    field? audio_in_channel, UInt32, "AudioInChannel"
+    field? audio_out_channel, UInt32, "AudioOutChannel"
+
     field? build_time, String, "BuildTime"
     field? combine_switch, UInt32, "CombineSwitch"
     field? device_model, String, "DeviceModel"
@@ -27,8 +30,6 @@ command System::Info::Reply, id: 0x03fd do
     field? updata_type, String, "UpdataType"
     field? video_in_channel, UInt32, "VideoInChannel"
     field? video_out_channel, UInt32, "VideoOutChannel"
-    field? extra_channel, UInt32, "ExtraChannel"
-    field? audio_in_channel, UInt32, "AudioInChannel"
   end
   field? ret, Int32, "Ret"
   field session_id_message, String, "SessionID", default: "0x00000000"
