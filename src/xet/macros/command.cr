@@ -214,7 +214,7 @@ macro command(class_path, id,
         parsed_command.size = msg.size
         parsed_command.message = msg.message
         parsed_command.use_custom_size = msg.use_custom_size?
-        {% if (block && build_message)%}
+        {% if (block && build_message) %}
         parsed_command.build_message!
         {% end  %}
         parsed_command

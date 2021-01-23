@@ -29,7 +29,6 @@ command System::Info::Reply, id: 0x03fd do
     field? video_out_channel, UInt32, "VideoOutChannel"
     field? extra_channel, UInt32, "ExtraChannel"
     field? audio_in_channel, UInt32, "AudioInChannel"
-    field? device_run_time, String, "DeviceRunTime"
   end
   field? ret, Int32, "Ret"
   field session_id_message, String, "SessionID", default: "0x00000000"
