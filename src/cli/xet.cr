@@ -1,4 +1,5 @@
 require "clim"
+require "colorize"
 
 require "../app_lib"
 
@@ -61,6 +62,7 @@ module XET
       version "Version #{XET::VERSION}"
       run do |opts, args|
         puts opts.help_string # => help string.
+        exit
       end
 
       sub "web" do
@@ -118,7 +120,7 @@ module XET
           if XET::Commands[full_command_name]?
             template_class = XET::Commands[full_command_name]
           else
-            puts "NOT A VALID TEMPLATE #{opts.template}|#{full_command_name}" unless opts.template == "?"
+            puts "NOT A VALID TEMPLATE #{opts.template}|#{full_command_name}".colorize.red unless opts.template == "?"
             puts "Available Templates: \n#{XET::Commands.to_h.values.join("\n").gsub(/XET::Command::/, "")}"
             exit
           end
@@ -152,13 +154,13 @@ module XET
                 socket.login(opts.user, opts.password)
               end
               socket.send_message msg
-              puts "Sent Packet!"
+              puts "Sent Packet!".colorize.green
               puts
               print_msg(msg)
               unless opts.no_listen
                 rmsg = socket.receive_message
                 puts
-                puts "Got Reply!"
+                puts "Got Reply!".colorize.green
                 puts
                 print_msg(rmsg)
               end
@@ -171,23 +173,23 @@ module XET
                 socket.login(opts.user, opts.password)
               end
               socket.send_message msg
-              puts "Sent Packet!"
+              puts "Sent Packet!".colorize.green
               puts
               print_msg(msg)
               unless opts.no_listen
                 rmsg = socket.receive_message
                 puts
-                puts "Got Reply!"
+                puts "Got Reply!".colorize.green
                 puts
                 print_msg(rmsg)
               end
               socket.close
             else
-              puts "ERROR: Dont know how you got here"
+              puts "ERROR: Dont know how you got here".colorize.red.yellow
               exit
             end
           rescue e
-            puts "Error: #{e.inspect}"
+            puts "Error: #{e.inspect}".colorize.red
           end
         end
       end
@@ -242,6 +244,72 @@ module XET
           end
 
           puts msg.to_s.inspect.gsub(/(^\")|(\"$)/, "\'")
+        end
+      end
+
+      sub "info" do
+        desc "Gives an output of various important information for XET"
+        usage "xet info [sub_command] [options]"
+
+        run do |o, a|
+          puts o.help_string
+          exit
+        end
+
+        sub "ret" do
+          desc "Lists all known Ret codes"
+          usage "xet info ret [options]"
+          run do |o, a|
+            puts "Ret Codes:"
+            XET::Ret::ALL.each do |ret, ret_hash|
+              puts "#{ret_hash[:code]} - #{ret_hash[:msg]}".colorize((ret_hash[:success] ? :green :  :red))
+            end
+            exit
+          end
+        end
+
+        sub "command" do
+          desc "XET::Command related information"
+          usage "xet info command [sub_command] [options]"
+          
+          run do |o, a|
+            puts o.help_string
+            exit
+          end
+
+          sub "templates" do
+            desc "Lists all command templates in XET::Commands"
+            usage "xet info command templates [options]"
+            run do |o, a|
+              puts "Available Commands: \n#{XET::Commands.to_h.values.join("\n").gsub(/XET::Command::/, "")}"
+              exit
+            end
+          end
+
+          sub "bad" do
+            desc "Lists all known bad command ids in XET::Commands"
+            usage "xet info command bad [options]"
+            run do |o, a|
+              puts "Bad Command Ids: \n#{XET::Command::Ids::Bad::ALL.to_a.map{|h| "#{h[0]} | 0x#{h[0].to_s(16).rjust(4, '0')} => #{h[1]}"}.join("\n").gsub(/XET::Error::/, "")}"
+              exit
+            end
+          end
+
+          
+          sub "ids" do
+            desc "Lists all known command ids in XET::Commands"
+            usage "xet info command ids [options]"
+            run do |o, a|
+              puts "Command Ids:"
+              XET::Command::Ids::ALL.each do |command_name, command_hash|
+                puts "  #{command_name}"
+                command_hash.each do |k, v|
+                  puts "      #{k} = #{v} | 0x#{v.to_s(16).rjust(4, '0')}"
+                end
+              end
+              exit
+            end
+          end
         end
       end
     end
