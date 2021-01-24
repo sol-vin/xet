@@ -13,7 +13,7 @@ require "./app/broadcasters"
 require "./app/routes/**"
 
 module XET::App
-  class_getter interface = ARGV[1]? || ""
+  class_getter interface = ""
   class_property broadcast_ip = ::Socket::IPAddress::BROADCAST
   class_property server_ip = ::Socket::IPAddress::UNSPECIFIED
 

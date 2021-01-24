@@ -8,11 +8,11 @@ macro xsock_opts_parse(name, type)
     value = 0
     begin
       if %name =~ /^0x[0-9a-fA-f]{1,8}$/
-        value = %name[2..].to_i(16)
+        value = %name[2..].to_i64(16)
       elsif  %name =~ /^0b[01]{8,32}$/
-        value = %name[2..].to_i(2)
+        value = %name[2..].to_i64(2)
       else
-        value = %name.to_i
+        value = %name.to_i64
       end
 
       {% if name.id == "size" %}
@@ -33,7 +33,7 @@ macro xsock_opts_parse(name, type)
       {% end %}
 
     rescue e
-      puts "ERROR: {{name}} was not a {{type}}(min:#{{{type}}::MIN},max:#{{{type}}::MAX}), instead was #{opts.{{name.id}}}|#{value}"
+      puts "ERROR: #{e.inspect} {{name}} was not a {{type}}(min:#{{{type}}::MIN},max:#{{{type}}::MAX}), instead was #{opts.{{name.id}}}|#{value}"
       exit
     end
   end
@@ -94,19 +94,19 @@ module XET
         option "-n", "--no-login", type: Bool, desc: "If we should login before sending the command", default: false
 
         option "-v", "--verbose", type: Bool, desc: "Print more debugging information to STDERR", default: false
-        option "-w TEMPLATE", "--template=TEMPLATE", type: String, desc: "Template for the message. Use '-w ?'' to see available templates", default: "Blank"
+        option "-w TEMPLATE", "--template=TEMPLATE", type: String, desc: "Template for the message. Use 'xet info command templates' to see available templates", default: "Blank"
 
-        option "-a TYPE", "--type=TYPE", type: String, desc: "The type field of the packet"
-        option "-b VERSION", "--version=VERSION", type: String, desc: "The version field of the packet"
-        option "-c RESERVED1", "--reserved1=RESERVED1", type: String, desc: "The reserved1 field of the packet"
-        option "-d RESERVED2", "--reserved2=RESERVED2", type: String, desc: "The reserved2 field of the packet"
-        option "-e SESSION_ID", "--session_id=SESSION_ID", type: String, desc: "The session_id field of the packet"
-        option "-f SEQUENCE", "--sequence=SEQUENCE", type: String, desc: "The sequence field of the packet"
-        option "-g TOTAL_PACKETS", "--total_packets=TOTAL_PACKETS", type: String, desc: "The total_packets field of the packet"
-        option "-h CURRENT_PACKET", "--current_packet=CURRENT_PACKET", type: String, desc: "The current_packet field of the packet"
-        option "-i ID", "--id=ID", type: String, desc: "The id field of the packet"
-        option "-j SIZE", "--size=SIZE", type: String, desc: "The size field of the packet"
-        option "-m MESSAGE", "--message=MESSAGE", type: String, desc: "The JSON message to send"
+        option "-a TYPE", "--type=TYPE", type: String, desc: "The type field of the packet. You can use decimal (0), hexadecimal(0x), and binary (0b) numbers here."
+        option "-b VERSION", "--version=VERSION", type: String, desc: "The version field of the packet You can use decimal (0), hexadecimal(0x), and binary (0b) numbers here."
+        option "-c RESERVED1", "--reserved1=RESERVED1", type: String, desc: "The reserved1 field of the packet. You can use decimal (0), hexadecimal(0x), and binary (0b) numbers here."
+        option "-d RESERVED2", "--reserved2=RESERVED2", type: String, desc: "The reserved2 field of the packet. You can use decimal (0), hexadecimal(0x), and binary (0b) numbers here."
+        option "-e SESSION_ID", "--session_id=SESSION_ID", type: String, desc: "The session_id field of the packet. You can use decimal (0), hexadecimal(0x), and binary (0b) numbers here."
+        option "-f SEQUENCE", "--sequence=SEQUENCE", type: String, desc: "The sequence field of the packet. You can use decimal (0), hexadecimal(0x), and binary (0b) numbers here."
+        option "-g TOTAL_PACKETS", "--total_packets=TOTAL_PACKETS", type: String, desc: "The total_packets field of the packet. You can use decimal (0), hexadecimal(0x), and binary (0b) numbers here."
+        option "-h CURRENT_PACKET", "--current_packet=CURRENT_PACKET", type: String, desc: "The current_packet field of the packet. You can use decimal (0), hexadecimal(0x), and binary (0b) numbers here."
+        option "-i ID", "--id=ID", type: String, desc: "The id field of the packet. You can use decimal (0), hexadecimal(0x), and binary (0b) numbers here."
+        option "-j SIZE", "--size=SIZE", type: String, desc: "The size field of the packet. You can use decimal (0), hexadecimal(0x), and binary (0b) numbers here."
+        option "-m MESSAGE", "--message=MESSAGE", type: String, desc: "The JSON message to send. "
 
         run do |opts, args|
           unless ["tcp", "udp"].any? { |t| opts.connection == t }
@@ -154,13 +154,13 @@ module XET
                 socket.login(opts.user, opts.password)
               end
               socket.send_message msg
-              puts "Sent Packet!".colorize.green
+              Log.info { "Sent Packet!".colorize.green }
               puts
               print_msg(msg)
               unless opts.no_listen
                 rmsg = socket.receive_message
                 puts
-                puts "Got Reply!".colorize.green
+                Log.info { "Got Reply!".colorize.green }
                 puts
                 print_msg(rmsg)
               end
@@ -189,7 +189,7 @@ module XET
               exit
             end
           rescue e
-            puts "Error: #{e.inspect}".colorize.red
+            Log.error {  "Error: #{e.inspect}".colorize.red }
           end
         end
       end
@@ -197,7 +197,7 @@ module XET
       sub "msg" do
         desc "Creates a message and outputs it in various formats"
         usage "xet msg [options]"
-        option "-w TEMPLATE", "--template=TEMPLATE", type: String, desc: "Template for the message. Use '-w ?'' to see available templates", default: "Blank"
+        option "-w TEMPLATE", "--template=TEMPLATE", type: String, desc: "Template for the message. Use 'xet info command templates' to see available templates", default: "Blank"
 
         option "-a TYPE", "--type=TYPE", type: String, desc: "The type field of the packet"
         option "-b VERSION", "--version=VERSION", type: String, desc: "The version field of the packet"
