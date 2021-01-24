@@ -67,7 +67,7 @@ class XET::App::Broadcaster
     spawn(name: "XET::App::Broadcaster -> Listen Fiber") do
       until @outgoing_netcom.closed?
         begin
-          xmsg = @socket.receive_message
+          xmsg = @socket.receive_message[0]
           Log.debug { "Got a potential reply from #{xmsg.message}" }
           netcom_reply = XET::Command::Network::Common::Reply.from_msg(xmsg)
           Log.debug { "Got parsed reply from #{netcom_reply.message}" }

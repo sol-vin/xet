@@ -1,7 +1,7 @@
 module ::XET::Socket
-  getter target = ::Socket::IPAddress.new("0.0.0.0", 0)
+  getter target : ::Socket::IPAddress? = nil
 
-  def set_target(socket_ip)
+  def set_target(socket_ip : ::Socket::IPAddress)
     @target = socket_ip
   end
 
@@ -36,16 +36,16 @@ module ::XET::Socket
           password = XET::Hash.digest(password)
       end
       login_command = XET::Command::Login::Request.new(username: username, password: password, encryption_type: encryption_type)
-      ::Log.debug { "XET::Socket: Sending login to #{@target.address}:#{@target.port}" }
+      ::Log.debug { "XET::Socket: Sending login to #{@target.try(&.address)}:#{@target.try(&.port)}" }
       self.send_raw_message login_command.to_s
-      ::Log.info { "XET::Socket: Sent login to #{@target.address}:#{@target.port}" }
+      ::Log.debug { "XET::Socket: Sent login to #{@target.try(&.address)}:#{@target.try(&.port)}" }
 
-      reply = receive_message
-      ::Log.info { "XET::Socket: Received Reply from #{@target.address}:#{@target.port}" }
+      reply = receive_message[0]
+      ::Log.debug { "XET::Socket: Received Reply from #{@target.try(&.address)}:#{@target.try(&.port)}" }
 
       begin
         net_com_reply = XET::Command::Network::Common::Reply.from_msg(reply)
-        ::Log.info {  "XET::Socket.login: GOT: #{JSON.parse(reply.message)["Ret"]} from #{@target.address}:#{@target.port}" }
+        ::Log.debug {  "XET::Socket.login: GOT: #{JSON.parse(reply.message)["Ret"]} from #{@target.try(&.address)}:#{@target.try(&.port)}" }
         unless [ XET::Command::Login::Ret::ADMIN_SUCCESS,  XET::Command::Login::Ret::DEFAULT_SUCCESS].includes? net_com_reply.ret
           raise XET::Error::Login::Failure.new
         end
@@ -76,30 +76,30 @@ module ::XET::Socket
     end
   end
 
-  def receive_message : XET::Message
+  def receive_message : Tuple(XET::Message, ::Socket::IPAddress)
     begin
-      if closed?
-        raise XET::Error::Socket::Closed.new
+      raise XET::Error::Socket::Closed.new if closed?
+      m = XET::Message.new
+      m.type = self.read_bytes(UInt8, IO::ByteFormat::LittleEndian)
+      m.version = self.read_bytes(UInt8, IO::ByteFormat::LittleEndian)
+      m.reserved1 = self.read_bytes(UInt8, IO::ByteFormat::LittleEndian)
+      m.reserved2 = self.read_bytes(UInt8, IO::ByteFormat::LittleEndian)
+      m.session_id = self.read_bytes(UInt32, IO::ByteFormat::LittleEndian)
+      m.sequence = self.read_bytes(UInt32, IO::ByteFormat::LittleEndian)
+      m.total_packets = self.read_bytes(UInt8, IO::ByteFormat::LittleEndian)
+      m.current_packet = self.read_bytes(UInt8, IO::ByteFormat::LittleEndian)
+      m.id = self.read_bytes(UInt16, IO::ByteFormat::LittleEndian)
+      m.size = self.read_bytes(UInt32, IO::ByteFormat::LittleEndian)
+
+      unless m.size == 0
+        m.message = self.read_string(m.size-1)
+      end
+
+      self.read_byte #bleed this byte
+      if target = @target
+        {m, target}
       else
-        m = XET::Message.new
-        m.type = self.read_bytes(UInt8, IO::ByteFormat::LittleEndian)
-        m.version = self.read_bytes(UInt8, IO::ByteFormat::LittleEndian)
-        m.reserved1 = self.read_bytes(UInt8, IO::ByteFormat::LittleEndian)
-        m.reserved2 = self.read_bytes(UInt8, IO::ByteFormat::LittleEndian)
-        m.session_id = self.read_bytes(UInt32, IO::ByteFormat::LittleEndian)
-        m.sequence = self.read_bytes(UInt32, IO::ByteFormat::LittleEndian)
-        m.total_packets = self.read_bytes(UInt8, IO::ByteFormat::LittleEndian)
-        m.current_packet = self.read_bytes(UInt8, IO::ByteFormat::LittleEndian)
-        m.id = self.read_bytes(UInt16, IO::ByteFormat::LittleEndian)
-        m.size = self.read_bytes(UInt32, IO::ByteFormat::LittleEndian)
-
-        unless m.size == 0
-          m.message = self.read_string(m.size-1)
-        end
-
-        self.read_byte #bleed this byte
-
-        m
+        raise "Target must be set to something to receive a message like this!"
       end
     rescue e : IO::EOFError
       raise XET::Error::Receive::EOF.new
@@ -178,11 +178,6 @@ class XET::Socket::TCP < TCPSocket
     end
   end
 
-  def bind_target(host, port)
-    set_target(host, port)
-    self.bind host, port
-  end
-
   def send_raw_message(message)
     message.to_s self
   end
@@ -213,14 +208,48 @@ class XET::Socket::UDP < UDPSocket
   end
 
   def send_raw_message(message)
-    self.send(message.to_s, target)
+    if target = @target
+      self.send(message.to_s, target)
+    else
+      raise "Socket has no target!"
+    end
   end
 
-  def receive_message : XET::Message
+  def send_raw_message(message, to : ::Socket::IPAddress)
+    self.send(message.to_s, to)
+  end
+
+  def send_message(xmm : XET::Message, to : ::Socket::IPAddress)
+    begin
+      self.send_raw_message xmm.to_s, to
+    rescue e : IO::EOFError
+      raise XET::Error::Send::EOF.new
+    rescue e : IO::TimeoutError
+      raise XET::Error::Send::Timeout.new
+    rescue e
+      if e.to_s.includes? "Connection refused"
+        raise XET::Error::Send::ConnectionRefused.new
+      elsif e.to_s.includes? "Closed stream"
+        raise XET::Error::Socket::Closed.new
+      elsif e.to_s.includes? "No route to host"
+        raise XET::Error::Send::NoRoute.new
+      elsif e.to_s.includes? "Broken pipe"
+        raise XET::Error::Send::BrokenPipe.new
+      elsif e.to_s.includes? "Connection reset"
+        raise XET::Error::Send::ConnectionReset.new 
+      elsif e.to_s.includes? "Bad file descriptor"
+        raise XET::Error::Send::BadFileDescriptor.new 
+      else
+        raise e
+      end
+    end
+  end
+
+  def receive_message : Tuple(XET::Message, ::Socket::IPAddress)
     begin
       # TODO: This needs fixing....
       packet_in = self.receive(1000)
-      XET::Message.from_s(packet_in[0])
+      {XET::Message.from_s(packet_in[0]), packet_in[1]}
     rescue e : IO::TimeoutError
       raise XET::Error::Receive::Timeout.new
     rescue e : IO::Error

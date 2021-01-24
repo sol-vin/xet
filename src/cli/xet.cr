@@ -158,7 +158,7 @@ module XET
               puts
               print_msg(msg)
               unless opts.no_listen
-                rmsg = socket.receive_message
+                rmsg = socket.receive_message[0]
                 puts
                 Log.info { "Got Reply!".colorize.green }
                 puts
@@ -177,7 +177,7 @@ module XET
               puts
               print_msg(msg)
               unless opts.no_listen
-                rmsg = socket.receive_message
+                rmsg = socket.receive_message[0]
                 puts
                 puts "Got Reply!".colorize.green
                 puts
