@@ -3,6 +3,9 @@ require "colorize"
 
 require "../app_lib"
 
+require "../app/routes/**"
+
+
 macro xsock_opts_parse(name, type)
   if %name = opts.{{name.id}}
     value = 0

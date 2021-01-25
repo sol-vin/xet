@@ -7,7 +7,6 @@ require "./app/target/**"
 require "./app/broadcaster/**"
 #require "./app/proxy/**"
 
-require "./app/routes/**"
 
 module XET::App
   class_getter interface = ""
