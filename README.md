@@ -23,17 +23,88 @@ then
 require "xet"
 ```
 
+You can also get access to some of the features of the web app by using
+
+```crystal
+require "xet/app"
+```
+
 #### Docs
 
 Will be available at some point in the future when I figure out how to properly document the macros I used :(
 
-## Tools
+## Cli
+
+You can use the CLI by compiling `xet` and then using the commands built in.
+
+#### info
+
+You can view certain informational pieces by using the `info` command. Things like, known command ids, bad command ids, and known ret codes.
+
+#### msg 
+
+Using `msg` you can print a message as a string to easily insert into programs. For example:
+
+Using `xet msg` will produce a blank message:
+```
+'\xFF\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000'
+```
+
+Using `xet msg -w [template name]` allows you to specify a template to use as a base.
+
+`xet msg -w System::Info::Request`
+```
+'\xFF\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\xFC\u0003.\u0000\u0000\u0000{\"Name\":\"SystemInfo\",\"SessionID\":\"0x00000000\"}'
+```
+
+You can also change various fields using the arguments. Any field argument listed below (besides `--message`) allow for you to use decimal (`123`), hexadecimal (`0x123`) or binary (`0b110011`) numbers.
+
+`xet msg --type 0b01 --version 2 --reserved1 3 --reserved2 0x4 --session_id 0x05060708 --sequence 0x090A0B0C --total_packets 0x0d --current_packet 0x0e --id 0x0f10 --size 0x11121314 --message ZYXWV`
+
+```
+'\u0001\u0002\u0003\u0004\b\a\u0006\u0005\f\v\n\t\r\u000E\u0010\u000F\u0014\u0013\u0012\u0011ZYXWV'
+```
+
+Using these arguments with the template `-w` command allows for quick building of messages.
+
+#### send
+`send` allows you to send a message to a device and, also allows the user to listen to a reply. 
+
+`xet send [options] [ip]`
+
+Some exmaples.
+
+Login to a camera and get it's info
+`xet send --template System::Info::Reply [ip]`
+
+[![asciicast](https://asciinema.org/a/8bOJwkEf9EEGvDDIlLhzHcuXH.svg)](https://asciinema.org/a/8bOJwkEf9EEGvDDIlLhzHcuXH)
+
+Try a command without authenticating first
+
+`xet send --no-login --template Login::Request [ip]`
+
+[![asciicast](https://asciinema.org/a/2RvDnKsByUqSFt1WrPfZqKHCk.svg)](https://asciinema.org/a/2RvDnKsByUqSFt1WrPfZqKHCk)
+
+Perform a broadcast and listen for multiple replies
+
+`xet send --no-login --listen 2 --template Network::Common::Request --port 34569 --connection udp --bind [interface] [broadcast ip]`
+
+[![asciicast](https://asciinema.org/a/KSGqQQr2jp03ah56KQYeeXGod.svg)](https://asciinema.org/a/KSGqQQr2jp03ah56KQYeeXGod)
+
+You can also change the fields like in `msg` using `--type`, `--version`, etc, etc.
+
+## Run the Web App
+
+```
+shards install
+shards build xet
+xet web --port [port] --interface [if]
+```
 
 ### Implemented
- - :(
+ - Broadcaster
+   - You can now broadcast and find devices.
 ### Coming Soon
- - Detector
-   - Detects Xiongmai products on the network either passively or actively.
  - Packet Inspector
    - Inspects packets
  - Stream Inspector
@@ -65,13 +136,7 @@ You can use this toolkit with any camera that uses the `XMEye` android app. Be c
 Recently I bought these:
  - [Eversecu Security Camera](https://www.amazon.com/gp/product/B07GPGPV67/ref=ppx_yo_dt_b_asin_title_o05_s00?ie=UTF8&psc=1) Mostly because they are POE and easy to turn on and off with a Cisco switch.
 
-## Run the Web App
 
-```
-shards install
-shards build app
-./bin/app
-```
 
 ## Contributors
 

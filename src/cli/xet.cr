@@ -1,7 +1,7 @@
 require "clim"
 require "colorize"
 
-require "../app_lib"
+require "../app"
 
 require "../app/routes/**"
 
