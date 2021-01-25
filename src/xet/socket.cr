@@ -187,6 +187,25 @@ class XET::Socket::UDP < UDPSocket
   
   include XET::Socket
 
+  def initialize
+    begin
+      super()
+      self.read_timeout = 10
+    rescue e
+      if e.to_s.includes? "Connection refused"
+        raise XET::Error::Socket::ConnectionRefused.new
+      elsif e.to_s.includes? "No route to host"
+        raise XET::Error::Socket::NoRoute.new
+      elsif e.to_s.includes? "Broken pipe"
+        raise XET::Error::Socket::BrokenPipe.new
+      elsif e.to_s.includes? "Connection reset"
+        raise XET::Error::Socket::ConnectionReset.new 
+      else
+        raise e
+      end
+    end
+  end
+
   def initialize(host, port)
     begin
       super()

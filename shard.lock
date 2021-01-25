@@ -16,10 +16,6 @@ shards:
     git: https://github.com/akitaonrails/fiberpool.git
     version: 0.1.0+git.commit.cdecd02c308a2b04aa7845df2d02bf2b460be648
 
-  interface_address:
-    git: https://github.com/t-richards/interface_address.git
-    version: 1.0.0
-
   kemal:
     git: https://github.com/kemalcr/kemal.git
     version: 0.27.0

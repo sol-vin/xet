@@ -85,8 +85,8 @@ module XET
         option "-r PORT", "--port=PORT", type: UInt16, desc: "Specifies the port", default: 34567
         option "-s PORT_TYPE", "--connection=PORT_TYPE", type: String, desc: "Specifies the port type. Either TCP or UDP", default: "tcp"
         option "-t TIMEOUT", "--timeout=TIMEOUT", type: UInt32, desc: "How long to wait for a reply in seconds", default: 5
-        option "-l", "--no-listen", type: Bool, default: false
-
+        option "-l TIMES", "--listen=TIMES", desc: "How many messages the socket should listen for.", type: UInt32, default: 1
+        option "-x INTERFACE", "--bind=INTERFACE", type: String, default: ""
         
 
         option "-u USER", "--user=USER", type: String, desc: "The username for the camera.", default: "admin"
@@ -110,7 +110,7 @@ module XET
 
         run do |opts, args|
           unless ["tcp", "udp"].any? { |t| opts.connection == t }
-            puts "Invalid port_type -s #{opts.connection} must be tcp or udp"
+            Log.error { "Invalid port_type -s #{opts.connection} must be tcp or udp" }
             exit
           end
 
@@ -120,7 +120,7 @@ module XET
           if XET::Commands[full_command_name]?
             template_class = XET::Commands[full_command_name]
           else
-            puts "NOT A VALID TEMPLATE #{opts.template}|#{full_command_name}".colorize.red unless opts.template == "?"
+            Log.error { "NOT A VALID TEMPLATE #{opts.template}|#{full_command_name}".colorize.red unless opts.template == "?" }
             puts "Available Templates: \n#{XET::Commands.to_h.values.join("\n").gsub(/XET::Command::/, "")}"
             exit
           end
@@ -150,14 +150,24 @@ module XET
               socket = XET::Socket::TCP.new(args.destination, opts.port)
               socket.broadcast = true
               socket.read_timeout = opts.timeout.seconds
+
+              unless opts.bind.empty?
+                Log.info {  "Binding to interface #{opts.bind}" }
+                interface = IPAddr.get_interface(opts.bind)
+                socket.bind ::Socket::IPAddress.new(interface.ip, opts.port.to_i)
+                Log.info {  "Bound to interface #{opts.bind}" }
+              end
+
               if !opts.no_login
                 socket.login(opts.user, opts.password)
               end
+
               socket.send_message msg
+
               Log.info { "Sent Packet!".colorize.green }
               puts
               print_msg(msg)
-              unless opts.no_listen
+              opts.listen.times do
                 rmsg = socket.receive_message[0]
                 puts
                 Log.info { "Got Reply!".colorize.green }
@@ -169,17 +179,25 @@ module XET
               socket = XET::Socket::UDP.new(args.destination, opts.port)
               socket.broadcast = true
               socket.read_timeout = opts.timeout.seconds
+              
+              unless opts.bind.empty?
+                Log.info {  "Binding to interface #{opts.bind}" }
+                interface = IPAddr.get_interface(opts.bind)
+                socket.bind ::Socket::IPAddress.new(interface.ip, opts.port.to_i)
+                Log.info {  "Bound to interface #{opts.bind}" }
+              end
+
               if !opts.no_login
                 socket.login(opts.user, opts.password)
               end
               socket.send_message msg
-              puts "Sent Packet!".colorize.green
+              Log.info { "Sent Packet!".colorize.green }
               puts
               print_msg(msg)
-              unless opts.no_listen
+              opts.listen.times do
                 rmsg = socket.receive_message[0]
                 puts
-                puts "Got Reply!".colorize.green
+                Log.info { "Got Reply!".colorize.green }
                 puts
                 print_msg(rmsg)
               end

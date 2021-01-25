@@ -17,9 +17,6 @@ dependencies:
     github: akitaonrails/fiberpool
   redis:
     github: jgaskins/redis
-  interface_address:
-    github: t-richards/interface_address
-    version: ~> 1.0.0
   clim:
     github: at-grandpa/clim
     version: 0.15.0
