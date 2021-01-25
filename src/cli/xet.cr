@@ -43,16 +43,16 @@ macro xsock_opts_parse(name, type)
 end
 
 def print_msg(msg : XET::Message)
-  puts "type: #{msg.type} | 0x#{msg.type.to_s(16).rjust(2, '0')}"
-  puts "version: #{msg.version} | 0x#{msg.version.to_s(16).rjust(2, '0')}"
-  puts "reserved1: #{msg.reserved1} | 0x#{msg.reserved1.to_s(16).rjust(2, '0')}"
-  puts "reserved2: #{msg.reserved2} | 0x#{msg.reserved2.to_s(16).rjust(2, '0')}"
-  puts "session_id: #{msg.session_id} | 0x#{msg.session_id.to_s(16).rjust(8, '0')}"
-  puts "sequence: #{msg.sequence} | 0x#{msg.sequence.to_s(16).rjust(8, '0')}"
-  puts "total_packets: #{msg.total_packets} | 0x#{msg.total_packets.to_s(16).rjust(2, '0')}"
-  puts "current_packet: #{msg.current_packet} | 0x#{msg.current_packet.to_s(16).rjust(2, '0')}"
-  puts "id: #{msg.id} | 0x#{msg.id.to_s(16).rjust(4, '0')}"
-  puts "size: #{msg.size} | 0x#{msg.size.to_s(16).rjust(8, '0')}"
+  puts "#{"type".colorize.red.bold}: #{msg.type} | 0x#{msg.type.to_s(16).rjust(2, '0')}"
+  puts "#{"version".colorize.green.bold}: #{msg.version} | 0x#{msg.version.to_s(16).rjust(2, '0')}"
+  puts "#{"reserved1".colorize.yellow.bold}: #{msg.reserved1} | 0x#{msg.reserved1.to_s(16).rjust(2, '0')}"
+  puts "#{"reserved2".colorize.blue.bold}: #{msg.reserved2} | 0x#{msg.reserved2.to_s(16).rjust(2, '0')}"
+  puts "#{"session_id".colorize.magenta.bold}: #{msg.session_id} | 0x#{msg.session_id.to_s(16).rjust(8, '0')}"
+  puts "#{"sequence".colorize.cyan.bold}: #{msg.sequence} | 0x#{msg.sequence.to_s(16).rjust(8, '0')}"
+  puts "#{"total_packets".colorize.light_red.bold}: #{msg.total_packets} | 0x#{msg.total_packets.to_s(16).rjust(2, '0')}"
+  puts "#{"current_packet".colorize.light_green.bold}: #{msg.current_packet} | 0x#{msg.current_packet.to_s(16).rjust(2, '0')}"
+  puts "#{"id".colorize.light_yellow.bold}: #{msg.id} | 0x#{msg.id.to_s(16).rjust(4, '0')}"
+  puts "#{"size".colorize.light_gray.bold}: #{msg.size} | 0x#{msg.size.to_s(16).rjust(8, '0')}"
   puts "#{`echo '#{msg.message}' | jq .`}"
 end
 
