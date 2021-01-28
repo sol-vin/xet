@@ -279,11 +279,24 @@ module XET
 
         sub "ret" do
           desc "Lists all known Ret codes"
-          usage "xet info ret [options]"
+          usage "xet info ret [ret_code]"
+          argument "retcode", type: String, desc: "A ret code to look up", default: ""
           run do |o, a|
-            puts "Ret Codes:"
-            XET::Ret::ALL.each do |ret, ret_hash|
-              puts "#{ret_hash[:code]} - #{ret_hash[:msg]}".colorize((ret_hash[:success] ? :green :  :red))
+            if a.retcode.empty?
+              puts "Ret Codes:"
+              XET::Ret::ALL.each do |ret, ret_hash|
+                puts "#{ret_hash[:code]} - #{ret_hash[:msg]}".colorize((ret_hash[:success] ? :green :  :red))
+              end
+            else
+              begin
+                if ret_hash = XET::Ret[a.retcode.to_i]?
+                  puts "#{ret_hash[:code]} - #{ret_hash[:msg]}".colorize((ret_hash[:success] ? :green :  :red))
+                else
+                  Log.error {"No code found for #{a.retcode}"}
+                end
+              rescue e : ArgumentError
+                Log.error {"#{a.retcode} was not an Int32!"}
+              end
             end
             exit
           end

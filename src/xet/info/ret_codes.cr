@@ -57,7 +57,7 @@ module XET::Ret
     syntax:   {code: 608, success: false, msg: "Illegal configuration syntax"}
   }
 
-  def self.[](code : Int32)
+  def self.[]?(code : Int32)
     ALL.values.find {|v| v[:code] == code}
   end
 end

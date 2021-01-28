@@ -200,8 +200,11 @@ macro command(class_path, id,
 
     def self.from_msg(msg : XET::Message) : ::XET::Command::{{class_path.id}}
       begin
+        {% if (block && build_message) %}
         parsed_command = ::XET::Command::{{class_path.id}}.from_json(msg.message)
-
+        {% else %}
+        parsed_command = ::XET::Command::{{class_path.id}}.new
+        {% end  %}
         parsed_command.type = msg.type
         parsed_command.version = msg.version
         parsed_command.reserved1 = msg.reserved1
@@ -223,7 +226,7 @@ macro command(class_path, id,
       end
     end
 
-    def self.from_msg?(msg : XET::Message) : self
+    def self.from_msg?(msg : XET::Message) : ::XET::Command::{{class_path.id}}?
       begin
         from_msg(msg)
       rescue exception : XET::Error::Command::CannotParse

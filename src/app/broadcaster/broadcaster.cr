@@ -20,16 +20,16 @@ class XET::App::Broadcaster
     @outgoing_netcom.close
     @socket = XET::Socket::UDP.new(XET::App.broadcast_ip, @port)
     @socket.bind ::Socket::IPAddress.new(XET::App.server_ip, @port.to_i32)
-    Log.info {"Bound to #{XET::App.server_ip} on #{@port}"}
     @socket.broadcast = true
+    Log.info {"Broadcaster: Bound to #{XET::App.server_ip} on #{@port}"}
   end
 
   def refresh_socket
     @socket.close
     @socket = XET::Socket::UDP.new(XET::App.broadcast_ip, @port)
     @socket.bind ::Socket::IPAddress.new(XET::App.server_ip, @port.to_i32)
-    Log.info {"Bound to #{XET::App.server_ip} on #{@port}"}
     @socket.broadcast = true
+    Log.info {"Broadcaster: Bound to #{XET::App.server_ip} on #{@port}"}
   end
 
   def close
@@ -44,7 +44,7 @@ class XET::App::Broadcaster
 
   def start_listening
     if @outgoing_netcom.closed?
-      Log.info { "Starting listening on #{port}" }
+      Log.info { "Broadcaster: Starting listening on #{port}" }
       @outgoing_netcom = Channel(XET::Command::Network::Common::Reply).new
       _spawn_listen_fiber
     else
@@ -54,7 +54,7 @@ class XET::App::Broadcaster
 
   def stop_listening
     unless @outgoing_netcom.closed?
-      Log.info { "Stopping listening on #{port}" }
+      Log.info { "Broadcaster: Stopping listening on #{port}" }
       @outgoing_netcom.close
     end
   end
@@ -68,23 +68,22 @@ class XET::App::Broadcaster
       until @outgoing_netcom.closed?
         begin
           xmsg = @socket.receive_message[0]
-          Log.debug { "Got a potential reply from #{xmsg.message}" }
+          Log.debug { "#{Fiber.current.name}: Got a potential reply from #{xmsg.message}" }
           netcom_reply = XET::Command::Network::Common::Reply.from_msg(xmsg)
-          Log.debug { "Got parsed reply from #{netcom_reply.message}" }
+          Log.debug { "#{Fiber.current.name}: Got parsed reply from #{netcom_reply.message}" }
           spawn(name: "XET::App::Broadcaster -> Listen Fiber -> Sending NetCom Result") do
             spawn(name: "XET::App::Broadcaster -> Listen Fiber -> Sending NetCom Result -> Send to outgoing") do 
               @outgoing_netcom.send netcom_reply 
             rescue e : Channel::ClosedError
             end
-            XET::App::FoundDevices.add? netcom_reply
           end
         rescue exception : XET::Error::Command::CannotParse
-          Log.info { "Couldn't parse message" }
+          Log.info { "#{Fiber.current.name}: Couldn't parse message" }
         rescue exception : XET::Error::Receive::Timeout
         rescue exception : XET::Error::Receive
           if exception.is_a?(XET::Error::Receive::Timeout)
           else
-            Log.info { "Listener on #{@port} had an exception: #{exception}" }
+            Log.info { "#{Fiber.current.name}: Listener on #{@port} had an exception: #{exception}" }
           end
         rescue exception : XET::Error::Socket::Closed
           # Socket closed so do nothing to gracefull exit
@@ -113,13 +112,13 @@ class XET::App::Broadcaster
   end
 
   private def _spawn_broadcast_fiber
-    spawn(name: "XET::App::Broadcaster -> Broadcast Fiber") do
+    spawn(name: "#{Fiber.current.name}: XET::App::Broadcaster -> Broadcast Fiber") do
       while @broadcasting
-        spawn(name: "XET::App::Broadcaster -> Listen Fiber -> Sending NetCom Result") do
+        spawn(name: "#{Fiber.current.name}: XET::App::Broadcaster -> Listen Fiber -> Sending NetCom Result") do
           begin
             @socket.send_message XET::Command::Network::Common::Request.new
           rescue e : XET::Error::Send
-            Log.error {"Broadcaster on #{@port} had an exception: #{e}"}
+            Log.error {"#{Fiber.current.name}: Broadcaster on #{@port} had an exception: #{e}"}
           rescue e : XET::Error::Socket::Closed
             # Do nothing so it gracefully finishes
           end
