@@ -26,7 +26,7 @@ module ::XET::Socket
         aes: false,
         encryption_algo: "",
         login_encryption_type: XET::Command::Bits::Request::LoginEncryptionType.new(
-          md5: true,
+          md5: encryption_type == "MD5",
           none: true,
           rsa: false
         ),
@@ -76,51 +76,7 @@ module ::XET::Socket
     end
   end
 
-  def receive_message : Tuple(XET::Message, ::Socket::IPAddress)
-    begin
-      raise XET::Error::Socket::Closed.new if closed?
-      m = XET::Message.new
-      m.type = self.read_bytes(UInt8, IO::ByteFormat::LittleEndian)
-      m.version = self.read_bytes(UInt8, IO::ByteFormat::LittleEndian)
-      m.reserved1 = self.read_bytes(UInt8, IO::ByteFormat::LittleEndian)
-      m.reserved2 = self.read_bytes(UInt8, IO::ByteFormat::LittleEndian)
-      m.session_id = self.read_bytes(UInt32, IO::ByteFormat::LittleEndian)
-      m.sequence = self.read_bytes(UInt32, IO::ByteFormat::LittleEndian)
-      m.total_packets = self.read_bytes(UInt8, IO::ByteFormat::LittleEndian)
-      m.current_packet = self.read_bytes(UInt8, IO::ByteFormat::LittleEndian)
-      m.id = self.read_bytes(UInt16, IO::ByteFormat::LittleEndian)
-      m.size = self.read_bytes(UInt32, IO::ByteFormat::LittleEndian)
-
-      unless m.size == 0
-        m.message = self.read_string(m.size-1)
-      end
-
-      self.read_byte #bleed this byte
-      if target = @target
-        {m, target}
-      else
-        raise "Target must be set to something to receive a message like this!"
-      end
-    rescue e : IO::EOFError
-      raise XET::Error::Receive::EOF.new
-    rescue e : IO::TimeoutError
-      raise XET::Error::Receive::Timeout.new
-    rescue e
-      if e.to_s.includes? "Connection refused"
-        raise XET::Error::Receive::ConnectionRefused.new
-      elsif e.to_s.includes? "No route to host"
-        raise XET::Error::Receive::NoRoute.new
-      elsif e.to_s.includes? "Broken pipe"
-        raise XET::Error::Receive::BrokenPipe.new
-      elsif e.to_s.includes? "Connection reset"
-        raise XET::Error::Receive::ConnectionReset.new 
-      elsif e.to_s.includes? "Bad file descriptor"
-        raise XET::Error::Receive::BadFileDescriptor.new 
-      else
-        raise e
-      end
-    end
-  end
+  abstract def receive_message : Tuple(XET::Message, ::Socket::IPAddress)
 
   def send_message(xmm : XET::Message)
     begin
@@ -154,8 +110,28 @@ class XET::Socket::TCP < TCPSocket
   include XET::Socket
 
   def initialize
-    super Socket::Family::INET, Socket::Type::STREAM,  Socket::Protocol::IP
+    super Socket::Family::INET, Socket::Type::STREAM, Socket::Protocol::IP
     self.read_timeout = 1
+  end
+
+  def initialize(ip_addr : ::Socket::IPAddress)
+    begin
+      super ip_addr.address, ip_addr.port
+      set_target(ip_addr.address, ip_addr.port)
+      self.read_timeout = 1
+    rescue e
+      if e.to_s.includes? "Connection refused"
+        raise XET::Error::Socket::ConnectionRefused.new
+      elsif e.to_s.includes? "No route to host"
+        raise XET::Error::Socket::NoRoute.new
+      elsif e.to_s.includes? "Broken pipe"
+        raise XET::Error::Socket::BrokenPipe.new
+      elsif e.to_s.includes? "Connection reset"
+        raise XET::Error::Socket::ConnectionReset.new 
+      else
+        raise e
+      end
+    end
   end
 
   def initialize(host, port)
@@ -180,6 +156,19 @@ class XET::Socket::TCP < TCPSocket
 
   def send_raw_message(message)
     message.to_s self
+  end
+
+  def receive_message : Tuple(XET::Message, ::Socket::IPAddress)
+    begin
+      # TODO: This needs fixing....
+      packet_in = self.receive(1000)
+      {XET::Message.from_s(packet_in[0]), packet_in[1].as(::Socket::IPAddress)}
+    rescue e : IO::TimeoutError
+      raise XET::Error::Receive::Timeout.new
+    rescue e : IO::Error
+      raise XET::Error::Socket::Closed.new if e.to_s.includes? "Closed"
+      raise e
+    end
   end
 end
 

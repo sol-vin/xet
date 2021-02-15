@@ -19,17 +19,17 @@ class XET::App::Broadcaster
   def initialize(@port = XET::DEFAULT_DISCOVERY_PORT, @interval = 20)
     @outgoing_netcom.close
     @socket = XET::Socket::UDP.new(XET::App.broadcast_ip, @port)
-    @socket.bind ::Socket::IPAddress.new(XET::App.server_ip, @port.to_i32)
+    @socket.bind ::Socket::IPAddress.new(XET::App.bind_ip, @port.to_i32)
     @socket.broadcast = true
-    Log.info {"Broadcaster: Bound to #{XET::App.server_ip} on #{@port}"}
+    Log.info {"Broadcaster: Bound to #{XET::App.bind_ip} on #{@port}"}
   end
 
   def refresh_socket
     @socket.close
     @socket = XET::Socket::UDP.new(XET::App.broadcast_ip, @port)
-    @socket.bind ::Socket::IPAddress.new(XET::App.server_ip, @port.to_i32)
+    @socket.bind ::Socket::IPAddress.new(XET::App.bind_ip, @port.to_i32)
     @socket.broadcast = true
-    Log.info {"Broadcaster: Bound to #{XET::App.server_ip} on #{@port}"}
+    Log.info {"Broadcaster: Bound to #{XET::App.bind_ip} on #{@port}"}
   end
 
   def close

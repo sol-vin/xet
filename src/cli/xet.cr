@@ -89,7 +89,7 @@ module XET
         option "-s PORT_TYPE", "--connection=PORT_TYPE", type: String, desc: "Specifies the port type. Either TCP or UDP", default: "tcp"
         option "-t TIMEOUT", "--timeout=TIMEOUT", type: UInt32, desc: "How long to wait for a reply in seconds", default: 5
         option "-l TIMES", "--listen=TIMES", desc: "How many messages the socket should listen for.", type: UInt32, default: 1
-        option "-x INTERFACE", "--bind=INTERFACE", type: String, default: ""
+        option "-x BIND_IP", "--bind=BIND_IP", desc: "The IP Address to bind to for listening", type: String
         
 
         option "-u USER", "--user=USER", type: String, desc: "The username for the camera.", default: "admin"
@@ -154,11 +154,16 @@ module XET
               socket.broadcast = true
               socket.read_timeout = opts.timeout.seconds
 
-              unless opts.bind.empty?
-                Log.info {  "Binding to interface #{opts.bind}" }
-                interface = IPAddr.get_interface(opts.bind)
-                socket.bind ::Socket::IPAddress.new(interface.ip, opts.port.to_i)
-                Log.info {  "Bound to interface #{opts.bind}" }
+              if opts.listen > 0 
+                if bind_ip = opts.bind
+                  Log.info {  "Binding to interface #{bind_ip}" }
+                  socket.bind(bind_ip, opts.port.to_i)
+                  Log.info {  "Bound to interface #{bind_ip}" }
+                else
+                  Log.info {  "Binding to all interfaces" }
+                  socket.bind(opts.port.to_i)
+                  Log.info {  "Bound to all interfaces" }
+                end
               end
 
               if !opts.no_login
@@ -182,14 +187,17 @@ module XET
               socket = XET::Socket::UDP.new(args.destination, opts.port)
               socket.broadcast = true
               socket.read_timeout = opts.timeout.seconds
-              
-              unless opts.bind.empty?
-                Log.info {  "Binding to interface #{opts.bind}" }
-                interface = IPAddr.get_interface(opts.bind)
-                socket.bind ::Socket::IPAddress.new(interface.ip, opts.port.to_i)
-                Log.info {  "Bound to interface #{opts.bind}" }
+              if opts.listen > 0 
+                if bind_ip = opts.bind
+                  Log.info {  "Binding to interface #{bind_ip}" }
+                  socket.bind(bind_ip, opts.port.to_i)
+                  Log.info {  "Bound to interface #{bind_ip}" }
+                else
+                  Log.info {  "Binding to all interfaces" }
+                  socket.bind(opts.port.to_i)
+                  Log.info {  "Bound to all interfaces" }
+                end
               end
-
               if !opts.no_login
                 socket.login(opts.user, opts.password)
               end
@@ -344,6 +352,96 @@ module XET
               exit
             end
           end
+        end
+      end
+
+      sub "proxy" do
+        desc "Creates a proxy handler, who will listen on a port, and attempt to hijack clients/cameras from broadcast"
+        usage "xet proxy [options]"
+        option "-i", "--interface=INF", type: String, desc: "The interface you would like to bind to.", default: "enp3s0"
+        option "--client-ips=IPS", type: String, desc: "The IPs of clients you would like to hijack"
+        option "--camera-ips=IPS", type: String, desc: "The IPs of cameras you would like to hijack"
+        option "--camera-macs=MACS", type: String, desc: "The MACs of cameras you would like to hijack"
+        option "--camera-sns=SNS", type: String, desc: "The SNs of cameras you would like to hijack"
+        option "--camera-names=NAMES", type: String, desc: "The names of cameras you would like to hijack"
+        option "-p PORT", "--port=PORT", type: UInt16, desc: "The discovery port you would like to bind to.", default: 34569_u16
+
+        run do |o, a|
+          XET::App.setup(o.interface)
+          proxy_handler = XET::App::Proxy::Handler.new(o.port)
+
+          # Find out how we should target clients
+          unless proxy_handler.clients_filter.target_all = !o.client_ips
+            client_ips = o.client_ips.as(String).split(",")
+            if client_ips.size == 1 && client_ips[0].empty?
+              puts "YOU CANNOT HAVE AN EMPTY CLIENT IP ADDRESS"
+              exit
+            else
+              client_ips.reject!(&.empty?)
+              proxy_handler.clients_filter.ip_addresses = client_ips.map do |ip|
+                if ip =~ /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/
+                  ip
+                elsif ip =~ /^(\d{1,3}|\*{1})\.(\d{1,3}|\*{1})\.(\d{1,3}|\*{1})\.(\d{1,3}|\*{1})$/
+                  ip = ip.gsub(".", "\\.")
+                  ip = ip.gsub("*", "\\d{1,3}")
+                  /#{ip}/
+                else
+                  puts "INVALID CLIENT IP ADDRESS #{ip}"
+                  exit
+                end
+              end
+            end
+          end
+
+          # Find out how we should target cameras
+          unless proxy_handler.cameras_filter.target_all = !(o.camera_ips || o.camera_macs || o.camera_sns || o.camera_names)
+            if camera_ip = o.camera_ips
+              camera_ips = camera_ip.split(",")
+              if camera_ips.size == 1 && camera_ips[0].empty?
+                puts "YOU CANNOT HAVE AN EMPTY CAMERA IP ADDRESS"
+                exit
+              else
+                camera_ips.reject!(&.empty?)
+                proxy_handler.cameras_filter.ip_addresses = camera_ips.map do |ip|
+                  if ip =~ /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/
+                    ip
+                  elsif ip =~ /^(\d{1,3}|\*{1})\.(\d{1,3}|\*{1})\.(\d{1,3}|\*{1})\.(\d{1,3}|\*{1})$/
+                    ip = ip.gsub(".", "\\.")
+                    ip = ip.gsub("*", "\\d{1,3}")
+                    /#{ip}/
+                  else
+                    puts "INVALID CAMERA IP ADDRESS #{ip}"
+                    exit
+                  end
+                end
+              end
+            end
+
+            if camera_mac = o.camera_macs
+              camera_macs = camera_mac.split(",")
+              if camera_macs.size == 1 && camera_macs[0].empty?
+                puts "YOU CANNOT HAVE AN EMPTY CAMERA MAC ADDRESS"
+                exit
+              else
+                camera_macs.reject!(&.empty?)
+                proxy_handler.cameras_filter.mac_addresses = camera_macs.map do |mac|
+                  if mac =~ /^([\da-fA-F]{2})\:([\da-fA-F]{2})\:([\da-fA-F]{2})\:([\da-fA-F]{2})\:([\da-fA-F]{2})\:([\da-fA-F]{2})$/
+                    mac
+                  elsif mac =~ /^([\da-fA-F\*]{2}|\*)\:([\da-fA-F\*]{2}|\*)\:([\da-fA-F\*]{2}|\*)\:([\da-fA-F\*]{2}|\*)\:([\da-fA-F\*]{2}|\*)\:([\da-fA-F\*]{2}|\*)$/
+                    /#{mac.gsub(":*:", ":[\da-fA-F]{2}:").gsub(":**:", ":[\da-fA-F]{2}:").gsub("*", "[\da-fA-F]{1}").gsub(":", "\\:")}/
+                  else
+                    puts "INVALID CAMERA MAC ADDRESS #{mac}"
+                    exit
+                  end
+                end
+              end
+            end
+          end
+          proxy_handler.start
+
+          # TODO: Fix this!
+          sleep 1.day
+          exit
         end
       end
     end
