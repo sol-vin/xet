@@ -154,6 +154,11 @@ class XET::Socket::TCP < TCPSocket
     end
   end
 
+  def initialize(client_fd : Int32)
+    super(client_fd, ::Socket::Family::INET, ::Socket::Type::STREAM, ::Socket::Protocol::TCP, blocking)
+    self.read_timeout = 1
+  end
+
   def send_raw_message(message)
     message.to_s self
   end
@@ -168,6 +173,49 @@ class XET::Socket::TCP < TCPSocket
     rescue e : IO::Error
       raise XET::Error::Socket::Closed.new if e.to_s.includes? "Closed"
       raise e
+    end
+  end
+
+  def accept : XET::Socket::TCP
+    accept? || raise XET::Error::Socket::Closed.new
+  end
+
+  # Accepts an incoming connection.
+  #
+  # Returns the client `Socket` or `nil` if the server is closed after invoking
+  # this method.
+  #
+  # ```
+  # require "socket"
+  #
+  # server = TCPServer.new(2202)
+  # if socket = server.accept?
+  #   socket.puts Time.utc
+  #   socket.close
+  # end
+  # ```
+  def accept?
+    if client_fd = accept_impl
+      sock = XET::Socket::TCP.new(client_fd)
+      sock.sync = sync?
+      sock
+    end
+  end
+
+  protected def accept_impl
+    loop do
+      client_fd = LibC.accept(fd, nil, nil)
+      if client_fd == -1
+        if closed?
+          return
+        elsif Errno.value == Errno::EAGAIN
+          wait_readable rescue nil
+        else
+          raise Socket::Error.from_errno("accept")
+        end
+      else
+        return client_fd
+      end
     end
   end
 end

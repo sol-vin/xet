@@ -5,7 +5,7 @@ require "./xet"
 require "./app/macros/**"
 require "./app/target/**"
 require "./app/broadcaster/**"
-require "./app/proxy/handler"
+require "./app/mitm/handler"
 
 
 

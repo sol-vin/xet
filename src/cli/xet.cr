@@ -355,92 +355,23 @@ module XET
         end
       end
 
-      sub "proxy" do
-        desc "Creates a proxy handler, who will listen on a port, and attempt to hijack clients/cameras from broadcast"
-        usage "xet proxy [options]"
+      sub "mitm" do
+        desc "Creates a mitm handler, who will listen on a port, and attempt to hijack clients/cameras from broadcast"
+        usage "xet mitm [options]"
         option "-i", "--interface=INF", type: String, desc: "The interface you would like to bind to.", default: "enp3s0"
-        option "--client-ips=IPS", type: String, desc: "The IPs of clients you would like to hijack"
-        option "--camera-ips=IPS", type: String, desc: "The IPs of cameras you would like to hijack"
-        option "--camera-macs=MACS", type: String, desc: "The MACs of cameras you would like to hijack"
-        option "--camera-sns=SNS", type: String, desc: "The SNs of cameras you would like to hijack"
-        option "--camera-names=NAMES", type: String, desc: "The names of cameras you would like to hijack"
+        # option "--client-ips=IPS", type: String, desc: "The IPs of clients you would like to hijack"
+        # option "--camera-ips=IPS", type: String, desc: "The IPs of cameras you would like to hijack"
+        # option "--camera-macs=MACS", type: String, desc: "The MACs of cameras you would like to hijack"
+        # option "--camera-sns=SNS", type: String, desc: "The SNs of cameras you would like to hijack"
+        # option "--camera-names=NAMES", type: String, desc: "The names of cameras you would like to hijack"
         option "-p PORT", "--port=PORT", type: UInt16, desc: "The discovery port you would like to bind to.", default: 34569_u16
 
         run do |o, a|
           XET::App.setup(o.interface)
-          proxy_handler = XET::App::Proxy::Handler.new(o.port)
+          mitm_handler = XET::App::MITM::Handler.new(o.port)
 
-          # Find out how we should target clients
-          unless proxy_handler.clients_filter.target_all = !o.client_ips
-            client_ips = o.client_ips.as(String).split(",")
-            if client_ips.size == 1 && client_ips[0].empty?
-              puts "YOU CANNOT HAVE AN EMPTY CLIENT IP ADDRESS"
-              exit
-            else
-              client_ips.reject!(&.empty?)
-              proxy_handler.clients_filter.ip_addresses = client_ips.map do |ip|
-                if ip =~ /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/
-                  ip
-                elsif ip =~ /^(\d{1,3}|\*{1})\.(\d{1,3}|\*{1})\.(\d{1,3}|\*{1})\.(\d{1,3}|\*{1})$/
-                  ip = ip.gsub(".", "\\.")
-                  ip = ip.gsub("*", "\\d{1,3}")
-                  /#{ip}/
-                else
-                  puts "INVALID CLIENT IP ADDRESS #{ip}"
-                  exit
-                end
-              end
-            end
-          end
-
-          # Find out how we should target cameras
-          unless proxy_handler.cameras_filter.target_all = !(o.camera_ips || o.camera_macs || o.camera_sns || o.camera_names)
-            if camera_ip = o.camera_ips
-              camera_ips = camera_ip.split(",")
-              if camera_ips.size == 1 && camera_ips[0].empty?
-                puts "YOU CANNOT HAVE AN EMPTY CAMERA IP ADDRESS"
-                exit
-              else
-                camera_ips.reject!(&.empty?)
-                proxy_handler.cameras_filter.ip_addresses = camera_ips.map do |ip|
-                  if ip =~ /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/
-                    ip
-                  elsif ip =~ /^(\d{1,3}|\*{1})\.(\d{1,3}|\*{1})\.(\d{1,3}|\*{1})\.(\d{1,3}|\*{1})$/
-                    ip = ip.gsub(".", "\\.")
-                    ip = ip.gsub("*", "\\d{1,3}")
-                    /#{ip}/
-                  else
-                    puts "INVALID CAMERA IP ADDRESS #{ip}"
-                    exit
-                  end
-                end
-              end
-            end
-
-            if camera_mac = o.camera_macs
-              camera_macs = camera_mac.split(",")
-              if camera_macs.size == 1 && camera_macs[0].empty?
-                puts "YOU CANNOT HAVE AN EMPTY CAMERA MAC ADDRESS"
-                exit
-              else
-                camera_macs.reject!(&.empty?)
-                proxy_handler.cameras_filter.mac_addresses = camera_macs.map do |mac|
-                  if mac =~ /^([\da-fA-F]{2})\:([\da-fA-F]{2})\:([\da-fA-F]{2})\:([\da-fA-F]{2})\:([\da-fA-F]{2})\:([\da-fA-F]{2})$/
-                    mac
-                  elsif mac =~ /^([\da-fA-F\*]{2}|\*)\:([\da-fA-F\*]{2}|\*)\:([\da-fA-F\*]{2}|\*)\:([\da-fA-F\*]{2}|\*)\:([\da-fA-F\*]{2}|\*)\:([\da-fA-F\*]{2}|\*)$/
-                    /#{mac.gsub(":*:", ":[\da-fA-F]{2}:").gsub(":**:", ":[\da-fA-F]{2}:").gsub("*", "[\da-fA-F]{1}").gsub(":", "\\:")}/
-                  else
-                    puts "INVALID CAMERA MAC ADDRESS #{mac}"
-                    exit
-                  end
-                end
-              end
-            end
-          end
-          proxy_handler.start
-
-          # TODO: Fix this!
           sleep 1.day
+
           exit
         end
       end

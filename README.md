@@ -93,6 +93,18 @@ Perform a broadcast and listen for multiple replies
 
 You can also change the fields like in `msg` using `--type`, `--version`, etc, etc.
 
+#### mitm
+
+The `mitm` command can be used to create a man in the middle proxy to replicate any cameras on the network, and intercept their traffic. 
+
+It can filter out what cameras to replicate, as well as what clients to target, by using the `--client-ips`, `--camera-ips`, `--camera-macs`, `--camera-sns` and, `--camera-names`, as well as use `,` to add multiple entries, and use regex as a filter.
+
+Some examples:
+
+`xet mitm --camera-ips="^10\.0\.0\.\d{1,3}$"` : Only targets camera's with ips in the 10.0.0.0/24 subnet
+
+
+
 ## Run the Web App
 
 ```
@@ -104,6 +116,8 @@ xet web --port [port] --interface [if]
 ### Implemented
  - Broadcaster
    - You can now broadcast and find devices.
+ - MITM
+   - Listens for client connections and tries to get between them and the camera/dvr server. 
 ### Coming Soon
  - Packet Inspector
    - Inspects packets
@@ -116,8 +130,7 @@ xet web --port [port] --interface [if]
    - An all purpose client for interacting with camera/dvr servers
  - Server
    - An all purpose server which impersonates a camera/dvr
- - MITM
-   - Listens for client connections and tries to get between them and the camera/dvr server. 
+
  - Fuzzing
    - Fuzzs commands and their fields
  - Brute Force

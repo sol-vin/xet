@@ -1,6 +1,7 @@
 # TODO: Bits::Reply?
 command Bits::Request, id: 0x0586 do
-  SPECIAL_SESSION_ID = 0x0001869f_u32 #TODO: This special session id must be present. Why?Check with ghidra? Binary disasm?
+  #TODO: This special session id must be present. Why?Check with ghidra? Binary disasm?
+  SPECIAL_SESSION_ID = 0x0001869f_u32 # => 99999
   field? bits, UInt32, "Bits"
 
   nest data_encryption_type, DataEncryptionType, "DataEncryptionType" do

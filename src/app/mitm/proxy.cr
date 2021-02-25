@@ -1,4 +1,4 @@
-class XET::App::Proxy
+class XET::App::MITM
   @socket_tcp : XET::Socket::TCP
   @socket_udp : XET::Socket::UDP
   @socket_discovery : XET::Socket::UDP
